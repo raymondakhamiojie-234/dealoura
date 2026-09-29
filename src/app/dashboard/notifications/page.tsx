@@ -20,7 +20,7 @@ export default async function NotificationsPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Notifications</h1>
         {notifications && notifications.some(n => !n.is_read) && (
-          <form action={markAllNotificationsAsRead}>
+          <form action={markAllNotificationsAsRead as any}>
             <button type="submit" className="text-sm font-medium text-indigo-600 hover:text-indigo-500">
               Mark all as read
             </button>
@@ -48,10 +48,10 @@ export default async function NotificationsPage() {
                       </Link>
                     )}
                     {!n.is_read && (
-                      <form action={async () => {
+                      <form action={(async () => {
                         'use server'
                         await markNotificationAsRead(n.id)
-                      }}>
+                      }) as any}>
                         <button type="submit" className="text-xs text-gray-500 hover:text-gray-900">
                           Mark read
                         </button>

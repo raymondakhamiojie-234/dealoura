@@ -46,14 +46,16 @@ export default async function MessagesLayout({
             <ul className="divide-y divide-gray-100">
               {conversations.map((convo) => {
                 const isBuyer = convo.buyer_id === user.id
-                const otherUser = isBuyer ? convo.seller?.username : convo.buyer?.username
+                const seller = convo.seller as any;
+                const buyer = convo.buyer as any;
+                const otherUser = isBuyer ? seller?.username : buyer?.username
 
                 return (
                   <ActiveConversationLink 
                     key={convo.id} 
                     id={convo.id} 
                     username={otherUser || 'Unknown'} 
-                    listingTitle={convo.listings?.title || 'Unknown Item'}
+                    listingTitle={(convo.listings as any)?.title || 'Unknown Item'}
                   />
                 )
               })}

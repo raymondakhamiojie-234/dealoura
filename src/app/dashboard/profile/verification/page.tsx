@@ -41,7 +41,7 @@ export default async function VerificationPage() {
             Upload a private document (e.g., ID or proof of ownership) to verify your account. This file will be kept strictly private and only viewable by administrators.
           </p>
 
-          <form action={submitVerification} className="space-y-6">
+          <form action={submitVerification as any} className="space-y-6">
             <div>
               <label htmlFor="evidence" className="block text-sm font-medium text-gray-700">Evidence File (Image or PDF)</label>
               <input

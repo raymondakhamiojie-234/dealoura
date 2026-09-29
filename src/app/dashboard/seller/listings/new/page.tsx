@@ -15,7 +15,7 @@ export default async function NewListingPage() {
       <h1 className="text-3xl font-bold text-gray-900 mb-8">Create New Listing</h1>
 
       <div className="bg-white shadow rounded-lg p-6">
-        <form action={createListing} className="space-y-6">
+        <form action={createListing as any} className="space-y-6">
           <div>
             <label htmlFor="title" className="block text-sm font-medium text-gray-700">Listing Title</label>
             <input

@@ -78,7 +78,7 @@ export default async function ChatPage(props: { params: Promise<{ id: string }> 
 
         {/* Input Area */}
         <div className="p-4 bg-white border-t border-gray-200 rounded-b-xl">
-          <form action={sendMessage} className="flex items-center space-x-2">
+          <form action={sendMessage as any} className="flex items-center space-x-2">
             <input type="hidden" name="conversation_id" value={convo.id} />
             <button type="button" className="p-2 text-gray-400 hover:text-gray-600 transition rounded-full hover:bg-gray-100">
               <Paperclip className="w-5 h-5" />

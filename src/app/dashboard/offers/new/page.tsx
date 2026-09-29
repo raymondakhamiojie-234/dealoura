@@ -41,7 +41,7 @@ export default async function NewOfferPage(props: { searchParams: Promise<{ list
           <p className="text-sm text-gray-500">Asking Price: <span className="font-semibold text-indigo-600">${listing.price}</span></p>
         </div>
 
-        <form action={makeOffer} className="space-y-6">
+        <form action={makeOffer as any} className="space-y-6">
           <input type="hidden" name="listing_id" value={listingId} />
           
           <div>

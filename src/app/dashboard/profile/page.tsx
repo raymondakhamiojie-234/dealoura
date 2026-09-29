@@ -31,7 +31,7 @@ export default async function ProfilePage() {
 
       <div className="bg-white shadow rounded-lg p-6 mb-8">
         <h2 className="text-xl font-semibold mb-4">Profile Information</h2>
-        <form action={updateProfile} className="space-y-4">
+        <form action={updateProfile as any} className="space-y-4">
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-700">Username</label>
             <input
@@ -63,7 +63,7 @@ export default async function ProfilePage() {
 
       <div className="bg-white shadow rounded-lg p-6">
         <h2 className="text-xl font-semibold mb-4">Change Password</h2>
-        <form action={changePassword} className="space-y-4">
+        <form action={changePassword as any} className="space-y-4">
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-gray-700">New Password</label>
             <input
