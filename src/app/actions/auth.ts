@@ -43,7 +43,24 @@ export async function signup(formData: FormData) {
   }
 
   // Next.js will redirect to this page asking them to verify their email
-  redirect('/verify-email')
+  redirect(`/verify-email?email=${encodeURIComponent(email)}`)
+}
+
+export async function resendVerification(formData: FormData) {
+  const email = formData.get('email') as string
+  if (!email) return { error: 'No email provided' }
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+  })
+
+  if (error) {
+    redirect(`/verify-email?email=${encodeURIComponent(email)}&error=${encodeURIComponent(error.message)}`)
+  }
+
+  redirect(`/verify-email?email=${encodeURIComponent(email)}&resent=true`)
 }
 
 export async function logout() {
