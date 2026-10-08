@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
+import { createNotification } from './notifications'
 
 export async function makeOffer(formData: FormData) {
   const amount = parseFloat(formData.get('amount') as string)
@@ -12,6 +13,13 @@ export async function makeOffer(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
+
+  // Fetch listing to get seller_id and title
+  const { data: listing } = await supabase
+    .from('listings')
+    .select('seller_id, title')
+    .eq('id', listing_id)
+    .single()
 
   // Expiration set to 7 days from now
   const expiresAt = new Date()
@@ -29,6 +37,16 @@ export async function makeOffer(formData: FormData) {
     })
 
   if (error) return { error: error.message }
+
+  // Send Notification & Email to Seller
+  if (listing && listing.seller_id) {
+    await createNotification(
+      listing.seller_id,
+      'New Offer Received!',
+      `You received a $${amount} offer on your listing "${listing.title}".`,
+      `/dashboard/offers`
+    )
+  }
 
   revalidatePath('/dashboard/offers')
   redirect('/dashboard/offers')
