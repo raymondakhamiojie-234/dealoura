@@ -68,15 +68,6 @@ export default function Navbar() {
               <Link href="/" className="text-sm font-bold text-gray-900 dark:text-white border-b-2 border-blue-600 h-full flex items-center px-1">
                 HOME
               </Link>
-              <Link href="/shop" className="text-sm font-semibold text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 h-full flex items-center px-1 transition">
-                SHOP
-              </Link>
-              <Link href="/blog" className="text-sm font-semibold text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 h-full flex items-center px-1 transition">
-                BLOG
-              </Link>
-              <Link href="/features" className="text-sm font-semibold text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 h-full flex items-center px-1 transition">
-                FEATURES
-              </Link>
             </div>
 
             {/* Desktop Icons Area */}
@@ -139,7 +130,6 @@ export default function Navbar() {
           <div className="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
             <div className="pt-2 pb-3 space-y-1">
               <Link href="/" className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 text-blue-700 dark:text-blue-500 block pl-3 pr-4 py-2 text-base font-medium">HOME</Link>
-              <Link href="/shop" className="border-l-4 border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-300 block pl-3 pr-4 py-2 text-base font-medium">SHOP</Link>
               
               {user ? (
                 <>
