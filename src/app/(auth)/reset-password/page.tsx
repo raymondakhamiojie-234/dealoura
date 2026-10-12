@@ -1,23 +1,42 @@
 'use client'
 
 import { useState } from 'react'
-import { updatePasswordReset } from '@/app/actions/auth'
+import { createClient } from '@/utils/supabase/client'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
+  const supabase = createClient()
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
     setLoading(true)
     setError(null)
 
-    const result = await updatePasswordReset(formData)
+    const formData = new FormData(e.currentTarget)
+    const password = formData.get('password') as string
 
-    if (result?.error) {
-      setError(result.error)
+    if (!password || password.length < 6) {
+      setError('Password must be at least 6 characters')
       setLoading(false)
+      return
     }
+
+    const { error: updateError } = await supabase.auth.updateUser({
+      password,
+    })
+
+    if (updateError) {
+      setError(updateError.message)
+      setLoading(false)
+      return
+    }
+
+    // Success! Redirect to login
+    router.push('/login?message=Password+updated+successfully')
   }
 
   return (
@@ -38,7 +57,7 @@ export default function ResetPasswordPage() {
           </div>
         )}
 
-        <form action={handleSubmit} className="mt-8 space-y-6">
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div>
             <label htmlFor="password" className="sr-only">New Password</label>
             <input
