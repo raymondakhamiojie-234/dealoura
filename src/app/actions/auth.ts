@@ -73,7 +73,7 @@ export async function requestPasswordReset(formData: FormData) {
   const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://dealoura.vercel.app'
   
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/reset-password`,
+    redirectTo: `${origin}/auth/confirm?next=/reset-password`,
   })
 
   if (error) {
