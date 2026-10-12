@@ -63,6 +63,45 @@ export async function resendVerification(formData: FormData) {
   redirect(`/verify-email?email=${encodeURIComponent(email)}&resent=true`)
 }
 
+export async function requestPasswordReset(formData: FormData) {
+  const email = formData.get('email') as string
+  if (!email) return { error: 'Email is required' }
+
+  const supabase = await createClient()
+  
+  // Try to determine the origin
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://dealoura.vercel.app'
+  
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/reset-password`,
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  return { success: true }
+}
+
+export async function updatePasswordReset(formData: FormData) {
+  const password = formData.get('password') as string
+  if (!password || password.length < 6) {
+    return { error: 'Password must be at least 6 characters' }
+  }
+
+  const supabase = await createClient()
+  const { error } = await supabase.auth.updateUser({
+    password,
+  })
+
+  if (error) {
+    return { error: error.message }
+  }
+
+  revalidatePath('/', 'layout')
+  redirect('/login?message=Password updated successfully')
+}
+
 export async function logout() {
   const supabase = await createClient()
   await supabase.auth.signOut()
