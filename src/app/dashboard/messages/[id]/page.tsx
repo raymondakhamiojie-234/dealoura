@@ -1,7 +1,6 @@
 import { createClient } from '@/utils/supabase/server'
-import { sendMessage } from '@/app/actions/messaging'
 import { redirect, notFound } from 'next/navigation'
-import { Paperclip, Send, AlertTriangle } from 'lucide-react'
+import LiveChat from './LiveChat'
 
 export default async function ChatPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -41,66 +40,14 @@ export default async function ChatPage(props: { params: Promise<{ id: string }> 
 
   return (
     <>
-      {/* Middle Column: Chat Area */}
-      <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col min-w-0">
-        
-        {/* Warning Banner */}
-        <div className="bg-red-50 px-4 py-3 border-b border-red-100 flex items-start rounded-t-xl">
-          <AlertTriangle className="w-5 h-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-red-700">
-            <strong>Reminder:</strong> communication outside of the website and conducting deals without our escrow agent is FORBIDDEN for your own safety.
-          </p>
-        </div>
-
-        {/* Chat Messages */}
-        <div className="flex-1 p-6 overflow-y-auto space-y-4">
-          {messages?.map((msg) => {
-            const isMe = msg.sender_id === user.id
-            return (
-              <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                <div className="flex flex-col max-w-[80%]">
-                  {!isMe && <span className="text-xs text-gray-400 mb-1 ml-1">{displayUser}</span>}
-                  <div className={`px-4 py-3 rounded-2xl ${
-                    isMe 
-                      ? 'bg-blue-600 text-white rounded-br-sm' 
-                      : 'bg-gray-100 text-gray-900 rounded-bl-sm'
-                  }`}>
-                    <p className="text-sm break-words">{msg.content}</p>
-                  </div>
-                  <span className={`text-[10px] text-gray-400 mt-1 ${isMe ? 'text-right mr-1' : 'ml-1'}`}>
-                    {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-
-        {/* Input Area */}
-        <div className="p-4 bg-white border-t border-gray-200 rounded-b-xl">
-          <form action={sendMessage as any} className="flex items-center space-x-2">
-            <input type="hidden" name="conversation_id" value={convo.id} />
-            <button type="button" className="p-2 text-gray-400 hover:text-gray-600 transition rounded-full hover:bg-gray-100">
-              <Paperclip className="w-5 h-5" />
-            </button>
-            <input
-              type="text"
-              name="content"
-              required
-              disabled={isBanned}
-              placeholder={isBanned ? "You cannot message a banned user." : "Enter your message..."}
-              className="flex-1 rounded-full border-gray-300 bg-gray-50 px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50"
-            />
-            <button
-              type="submit"
-              disabled={isBanned}
-              className="p-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition disabled:opacity-50 shadow-sm"
-            >
-              <Send className="w-5 h-5 ml-0.5" />
-            </button>
-          </form>
-        </div>
-      </div>
+      {/* Middle Column: Real-time Live Chat Area */}
+      <LiveChat
+        initialMessages={messages || []}
+        conversationId={convo.id}
+        currentUserId={user.id}
+        displayUser={displayUser || 'User'}
+        isBanned={isBanned}
+      />
 
       {/* Right Column: User Profile context */}
       <div className="w-64 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col p-6 hidden lg:flex items-center text-center">
