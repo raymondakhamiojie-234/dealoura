@@ -3,12 +3,23 @@ import Link from 'next/link'
 import { Truck, HeadphonesIcon, ShieldCheck, ChevronRight, ChevronLeft, MessageCircle, Smartphone, Zap, CheckCircle, Video, Camera, Hash, MessageSquare } from 'lucide-react'
 import { ScrollAnimation } from '@/components/scroll-animation'
 import { HeroSlider } from '@/components/hero-slider'
+import { MarketplaceFilterBar } from '@/components/marketplace-filter-bar'
 
-export default async function Home() {
+export default async function Home(props: {
+  searchParams: Promise<{
+    q?: string
+    platform?: string
+    min_followers?: string
+    monetized?: string
+    sort?: string
+  }>
+}) {
+  const searchParams = await props.searchParams
+  const { q, platform, min_followers, monetized, sort } = searchParams
   const supabase = await createClient()
 
-  // Fetch approved listings for the products grid
-  const { data: listings } = await supabase
+  // Base query for approved listings
+  let query = supabase
     .from('listings')
     .select(`
       *,
@@ -16,8 +27,42 @@ export default async function Home() {
       listing_media (media_url, display_order)
     `)
     .eq('status', 'approved')
-    .order('created_at', { ascending: false })
-    .limit(10)
+
+  // Apply filters
+  if (platform && platform !== 'All') {
+    query = query.eq('platform', platform)
+  }
+
+  if (monetized === 'true') {
+    query = query.eq('monetized', true)
+  }
+
+  if (min_followers) {
+    const minFollowersNum = parseInt(min_followers, 10)
+    if (!isNaN(minFollowersNum)) {
+      query = query.gte('followers_count', minFollowersNum)
+    }
+  }
+
+  if (q && q.trim()) {
+    const searchTerm = q.trim()
+    query = query.or(
+      `title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,niche.ilike.%${searchTerm}%,account_handle.ilike.%${searchTerm}%`
+    )
+  }
+
+  // Apply sorting
+  if (sort === 'price_asc') {
+    query = query.order('price', { ascending: true })
+  } else if (sort === 'price_desc') {
+    query = query.order('price', { ascending: false })
+  } else if (sort === 'followers') {
+    query = query.order('followers_count', { ascending: false })
+  } else {
+    query = query.order('created_at', { ascending: false })
+  }
+
+  const { data: listings } = await query.limit(25)
 
   return (
     <div className="bg-white transition-colors duration-200 overflow-hidden">
@@ -137,17 +182,21 @@ export default async function Home() {
         </div>
       </div>
 
-      {/* 4. Top Products Section */}
+      {/* 4. Explore Accounts Section with Live Filters */}
       <ScrollAnimation direction="up" delay={0.1}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="flex flex-col md:flex-row justify-between items-end md:items-center mb-8 border-b border-blue-100 pb-2">
-            <h2 className="text-2xl font-black text-gray-900 mb-4 md:mb-0">Top Accounts</h2>
-            <div className="flex space-x-6">
-              <button className="text-xs font-bold text-blue-600 border-b-2 border-blue-600 pb-2 -mb-[10px]">LATEST</button>
-              <button className="text-xs font-bold text-gray-400 hover:text-blue-600 pb-2 -mb-[10px] transition">BEST SELLER</button>
-              <button className="text-xs font-bold text-gray-400 hover:text-blue-600 pb-2 -mb-[10px] transition">FEATURED</button>
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+            <div>
+              <h2 className="text-2xl font-black text-gray-900">Explore Accounts</h2>
+              <p className="text-xs text-gray-500 mt-1">Verified social media channels protected by Dealoura Escrow</p>
+            </div>
+            <div className="text-xs font-semibold text-gray-400 mt-2 md:mt-0">
+              {listings?.length || 0} {listings?.length === 1 ? 'account' : 'accounts'} found
             </div>
           </div>
+
+          {/* Interactive Search & Filter Bar */}
+          <MarketplaceFilterBar />
 
           {/* Database Products Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">

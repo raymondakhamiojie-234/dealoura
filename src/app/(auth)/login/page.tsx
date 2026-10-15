@@ -5,6 +5,8 @@ import { login } from '@/app/actions/auth'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
+import { GoogleSignInButton } from '@/components/google-sign-in-button'
+
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -23,14 +25,27 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md space-y-8 rounded-xl bg-white p-8 shadow-md">
+      <div className="w-full max-w-md space-y-6 rounded-xl bg-white p-8 shadow-md">
         <div className="text-center">
-          <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">
+          <h2 className="text-3xl font-extrabold tracking-tight text-gray-900">
             Sign in to your account
           </h2>
+          <p className="text-xs text-gray-500 mt-1">Welcome back to Dealoura</p>
+        </div>
+
+        {/* 1-Click Google OAuth */}
+        <div className="pt-2">
+          <GoogleSignInButton text="Sign in with Google" />
+        </div>
+
+        {/* Divider */}
+        <div className="relative flex items-center justify-center">
+          <div className="border-t border-gray-200 w-full"></div>
+          <span className="bg-white px-3 text-xs text-gray-400 uppercase font-medium">or email</span>
+          <div className="border-t border-gray-200 w-full"></div>
         </div>
         
-        <form action={handleSubmit} className="mt-8 space-y-6">
+        <form action={handleSubmit} className="space-y-6">
           {error && (
             <div className="rounded-md bg-red-50 p-4 text-sm text-red-700">
               {error}

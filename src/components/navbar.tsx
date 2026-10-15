@@ -72,9 +72,9 @@ export default function Navbar() {
 
             {/* Desktop Icons Area */}
             <div className="hidden md:flex items-center space-x-6">
-              <button className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition">
+              <Link href="/#browse" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition" title="Search Marketplace">
                 <Search className="h-5 w-5" />
-              </button>
+              </Link>
 
               {user ? (
                 <div className="flex items-center space-x-5">
