@@ -138,6 +138,194 @@ export async function processMockPayment(transactionId: string) {
   return { success: true }
 }
 
+// 2b. Submit Bank Transfer / Payment Proof (Buyer)
+export async function submitPaymentTransferProof(formData: FormData) {
+  const transactionId = formData.get('transactionId') as string
+  const payerName = formData.get('payer_name') as string
+  const payerBank = formData.get('payer_bank') as string
+  const referenceCode = formData.get('reference_code') as string
+  const amountPaid = parseFloat(formData.get('amount_paid') as string) || 0
+  const notes = (formData.get('notes') as string) || ''
+  const receiptFile = formData.get('receipt_file') as File | null
+
+  if (!transactionId || !payerName || !payerBank || !referenceCode) {
+    return { error: 'Please provide payer name, sending bank, and reference code' }
+  }
+
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  // Verify user is buyer
+  const { data: tx } = await supabase
+    .from('transactions')
+    .select(`
+      *,
+      listings(title),
+      seller:seller_id(username)
+    `)
+    .eq('id', transactionId)
+    .single()
+
+  if (!tx || tx.buyer_id !== user.id) {
+    return { error: 'Unauthorized' }
+  }
+
+  // Upload receipt if provided
+  let receiptUrl = ''
+  if (receiptFile && receiptFile.size > 0) {
+    try {
+      const fileExt = receiptFile.name.split('.').pop() || 'jpg'
+      const filePath = `receipts/${transactionId}-${Date.now()}.${fileExt}`
+      const { error: uploadError } = await supabase.storage
+        .from('listing-images')
+        .upload(filePath, receiptFile)
+
+      if (!uploadError) {
+        receiptUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/listing-images/${filePath}`
+      }
+    } catch (uploadErr) {
+      console.warn('Receipt upload exception:', uploadErr)
+    }
+  }
+
+  const proofData = {
+    payerName: payerName.trim(),
+    payerBank: payerBank.trim(),
+    referenceCode: referenceCode.trim(),
+    amountPaid: amountPaid || tx.agreed_price,
+    notes: notes.trim(),
+    receiptUrl: receiptUrl || null,
+    submittedAt: new Date().toISOString()
+  }
+
+  const proofJson = JSON.stringify(proofData)
+
+  // Update transaction with payment proof data
+  let { error: updateError } = await supabase
+    .from('transactions')
+    .update({
+      status: 'payment_verifying',
+      payment_proof_data: proofJson,
+      payment_proof_url: receiptUrl || null
+    })
+    .eq('id', transactionId)
+
+  if (updateError) {
+    const res = await supabase
+      .from('transactions')
+      .update({
+        payment_proof_data: proofJson,
+        payment_proof_url: receiptUrl || null
+      })
+      .eq('id', transactionId)
+    if (res.error) return { error: res.error.message }
+  }
+
+  // Record payment record
+  await supabase
+    .from('payments')
+    .insert({
+      transaction_id: transactionId,
+      user_id: user.id,
+      provider: 'bank_transfer',
+      provider_transaction_id: referenceCode,
+      amount: amountPaid || tx.agreed_price,
+      status: 'pending'
+    })
+
+  // Notify seller of transfer submission
+  try {
+    const listingTitle = tx.listings?.title || 'Account'
+    await createNotification(
+      tx.seller_id,
+      `Buyer Submitted Transfer Proof: "${listingTitle}"`,
+      `The buyer submitted bank transfer proof of $${amountPaid || tx.agreed_price} (Ref: ${referenceCode}). The Dealoura Escrow Desk is reconciling the deposit.`,
+      `/dashboard/transactions/${transactionId}`,
+      'transaction'
+    )
+  } catch (notifErr) {
+    console.warn('Payment proof submission notification note:', notifErr)
+  }
+
+  revalidatePath(`/dashboard/transactions/${transactionId}`)
+  return { success: true }
+}
+
+// 2c. Admin / Desk Confirmation of Escrow Deposit
+export async function adminConfirmEscrowDeposit(transactionId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  // Fetch transaction with buyer and seller details
+  const { data: tx } = await supabase
+    .from('transactions')
+    .select(`
+      *,
+      listings(title),
+      buyer:buyer_id(username, email),
+      seller:seller_id(username, email)
+    `)
+    .eq('id', transactionId)
+    .single()
+
+  if (!tx) return { error: 'Transaction not found' }
+
+  // Advance status to payment_confirmed
+  const { error: updateError } = await supabase
+    .from('transactions')
+    .update({ status: 'payment_confirmed' })
+    .eq('id', transactionId)
+
+  if (updateError) return { error: updateError.message }
+
+  // Update payment record to succeeded
+  await supabase
+    .from('payments')
+    .update({ status: 'succeeded' })
+    .eq('transaction_id', transactionId)
+
+  const listingTitle = tx.listings?.title || 'Account'
+  const sellerUsername = (tx.seller as any)?.username || 'Seller'
+  const buyerUsername = (tx.buyer as any)?.username || 'Buyer'
+
+  try {
+    // 1. Seller: Request credentials
+    const sellerEmailHtml = renderEscrowDepositEmail({
+      sellerName: sellerUsername,
+      buyerUsername,
+      listingTitle,
+      agreedPrice: tx.agreed_price,
+      transactionId: tx.id
+    })
+    await createNotification(
+      tx.seller_id,
+      `Escrow Deposit Confirmed: "${listingTitle}"`,
+      `The buyer's deposit of $${tx.agreed_price} has been verified and locked in the Dealoura Escrow Vault. Please submit account credentials to the agent.`,
+      `/dashboard/transactions/${tx.id}`,
+      'transaction',
+      sellerEmailHtml
+    )
+
+    // 2. Buyer: Confirmation receipt
+    await createNotification(
+      tx.buyer_id,
+      `Deposit Verified & Secured: "${listingTitle}"`,
+      `Your bank transfer of $${tx.agreed_price} has been reconciled and secured in escrow. The seller has been instructed to hand over credentials.`,
+      `/dashboard/transactions/${tx.id}`,
+      'transaction'
+    )
+  } catch (notifErr) {
+    console.warn('Deposit confirmation notification error:', notifErr)
+  }
+
+  revalidatePath(`/dashboard/transactions/${transactionId}`)
+  revalidatePath('/admin/transactions')
+  revalidatePath('/admin')
+  return { success: true }
+}
+
 // 3. Submit Account Credentials to Escrow Agent
 export async function submitAccountCredentials(formData: FormData) {
   const transactionId = formData.get('transactionId') as string

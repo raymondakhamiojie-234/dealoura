@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import { EvaluationCountdown } from '@/components/evaluation-countdown'
 import { EscrowCredentialVault } from '@/components/escrow-credential-vault'
+import { EscrowTransferBanner } from '@/components/escrow-transfer-banner'
 
 export default async function TransactionTrackerPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params
@@ -71,7 +72,9 @@ export default async function TransactionTrackerPage(props: { params: Promise<{ 
     { key: 'completed', label: 'Payout' },
   ]
 
-  const currentPhaseIndex = PHASES.findIndex((p) => p.key === tx.status)
+  const currentPhaseIndex = tx.status === 'payment_verifying'
+    ? 0
+    : PHASES.findIndex((p) => p.key === tx.status)
 
   const escrowFee = tx.escrow_fee || Math.round(tx.agreed_price * 0.05 * 100) / 100
   const sellerPayout = Math.max(0, tx.agreed_price - escrowFee)
@@ -159,37 +162,48 @@ export default async function TransactionTrackerPage(props: { params: Promise<{ 
               </div>
             </div>
 
-            {/* ACTION STAGE 1: PENDING PAYMENT */}
-            {tx.status === 'pending_payment' && isBuyer && (
-              <div className="bg-blue-50/60 border border-blue-200 rounded-2xl p-6 text-center space-y-4">
-                <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto">
-                  <Lock className="w-6 h-6" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-gray-900">Deposit Funds into Escrow</h3>
-                  <p className="text-xs text-gray-600 mt-1 max-w-md mx-auto">
-                    Your offer was accepted! Deposit funds into the Dealoura Escrow vault. Money is held securely and never released to the seller until your 7-day evaluation completes.
-                  </p>
-                </div>
-                <form action={processMockPayment.bind(null, tx.id) as any}>
-                  <button
-                    type="submit"
-                    className="py-3 px-8 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-sm rounded-xl shadow-md transition"
-                  >
-                    Deposit ${tx.agreed_price} to Escrow Vault
-                  </button>
-                </form>
-              </div>
+            {/* ACTION STAGE 1: PENDING PAYMENT / PAYMENT VERIFYING */}
+            {(tx.status === 'pending_payment' || tx.status === 'payment_verifying') && isBuyer && (
+              <EscrowTransferBanner
+                transactionId={tx.id}
+                agreedPrice={tx.agreed_price}
+                escrowFee={escrowFee}
+                paymentProofData={tx.payment_proof_data}
+                paymentProofUrl={tx.payment_proof_url}
+                isBuyer={isBuyer}
+              />
             )}
 
-            {tx.status === 'pending_payment' && !isBuyer && (
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-center text-amber-800 space-y-2">
-                <Clock className="w-8 h-8 text-amber-600 mx-auto" />
-                <h3 className="text-base font-bold text-amber-900">Waiting for Buyer Deposit</h3>
-                <p className="text-xs text-amber-700 max-w-md mx-auto">
-                  The buyer has not funded the escrow vault yet. <strong>Do NOT transfer any account credentials</strong> until Dealoura confirms the deposit!
-                </p>
-              </div>
+            {(tx.status === 'pending_payment' || tx.status === 'payment_verifying') && !isBuyer && (
+              tx.payment_proof_data ? (
+                <div className="bg-amber-50/80 border-2 border-amber-200 rounded-3xl p-6 sm:p-8 text-center text-amber-900 space-y-3">
+                  <div className="w-12 h-12 bg-amber-100 text-amber-700 rounded-2xl flex items-center justify-center mx-auto">
+                    <Clock className="w-6 h-6 animate-pulse" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-black tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900">
+                      Payment Verification in Progress
+                    </span>
+                    <h3 className="text-xl font-black text-gray-900 mt-1.5">
+                      Buyer Transfer Submitted
+                    </h3>
+                  </div>
+                  <p className="text-xs text-amber-800/90 max-w-md mx-auto leading-relaxed">
+                    The buyer has submitted their bank transfer confirmation details. The Dealoura Escrow Desk is reconciling the deposit. You will receive an instant alert and email once the funds are secured in the vault.
+                  </p>
+                  <p className="text-xs font-bold text-red-600 bg-red-50 py-2 px-4 rounded-xl border border-red-200 inline-block mt-1">
+                    ⚠ DO NOT send or hand over any credentials yet!
+                  </p>
+                </div>
+              ) : (
+                <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 text-center text-amber-800 space-y-2">
+                  <Clock className="w-8 h-8 text-amber-600 mx-auto" />
+                  <h3 className="text-base font-bold text-amber-900">Waiting for Buyer Deposit</h3>
+                  <p className="text-xs text-amber-700 max-w-md mx-auto">
+                    The buyer has not transferred funds into the escrow vault yet. <strong>Do NOT transfer any account credentials</strong> until Dealoura confirms the deposit!
+                  </p>
+                </div>
+              )
             )}
 
             {/* ACTION STAGE 2: PAYMENT CONFIRMED / SUBMIT CREDENTIALS */}

@@ -1,18 +1,21 @@
 import { createClient } from '@/utils/supabase/server'
 import { adminAdvanceEscrow } from '@/app/actions/admin'
+import { adminConfirmEscrowDeposit } from '@/app/actions/transactions'
 import Link from 'next/link'
-import { ArrowLeft, CheckCircle, Clock, ShieldCheck } from 'lucide-react'
+import { ArrowLeft, CheckCircle, Clock, ShieldCheck, ExternalLink, FileText, AlertCircle } from 'lucide-react'
 
 export default async function AdminTransactionsPage() {
   const supabase = await createClient()
 
-  // Fetch all transactions
+  // Fetch all transactions including payment proof details
   const { data: transactions } = await supabase
     .from('transactions')
     .select(`
       id,
       agreed_price,
       status,
+      payment_proof_data,
+      payment_proof_url,
       created_at,
       listings (title, platform, price),
       buyer:buyer_id (username),
@@ -26,7 +29,7 @@ export default async function AdminTransactionsPage() {
       <div>
         <h1 className="text-2xl font-black text-gray-900">Escrow Deals Management</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Monitor the DealBaron-style middle-man escrow workflow. Confirm account receipt, start buyer 7-day evaluation, and release seller payouts.
+          Monitor the middle-man escrow workflow. Reconcile bank transfers, confirm account credentials, manage the 7-day evaluation window, and release seller payouts.
         </p>
       </div>
 
@@ -37,12 +40,21 @@ export default async function AdminTransactionsPage() {
             {transactions.map((tx: any) => {
               const status = tx.status
 
+              let proof: any = null
+              if (tx.payment_proof_data) {
+                try {
+                  proof = JSON.parse(tx.payment_proof_data)
+                } catch {
+                  // Ignored
+                }
+              }
+
               return (
                 <li key={tx.id} className="p-6 hover:bg-slate-50/50 transition">
                   <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     
                     {/* Deal Meta */}
-                    <div className="space-y-1">
+                    <div className="space-y-1.5 flex-1">
                       <div className="flex items-center space-x-2">
                         <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
                           {tx.listings?.platform || 'Account'}
@@ -59,15 +71,62 @@ export default async function AdminTransactionsPage() {
                         <span>Created: {new Date(tx.created_at).toLocaleDateString()}</span>
                       </div>
 
-                      <div className="pt-1">
+                      <div className="flex items-center gap-2 pt-1">
                         <span className="inline-flex items-center text-xs font-extrabold uppercase tracking-wide px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-800 border">
                           Status: {status?.replace(/_/g, ' ')}
                         </span>
+
+                        {proof && (status === 'pending_payment' || status === 'payment_verifying') && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 animate-pulse">
+                            <Clock className="w-3 h-3" /> Deposit Verification Needed
+                          </span>
+                        )}
                       </div>
+
+                      {/* Submitted Transfer Proof Summary in Admin Row */}
+                      {proof && (status === 'pending_payment' || status === 'payment_verifying') && (
+                        <div className="mt-2 p-3 bg-amber-50/70 rounded-xl border border-amber-200 text-xs text-amber-900 space-y-1">
+                          <p className="font-bold">
+                            Buyer Bank Transfer Details Submitted:
+                          </p>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] text-gray-700">
+                            <div>Payer: <strong>{proof.payerName}</strong> ({proof.payerBank})</div>
+                            <div>Ref: <strong className="font-mono text-blue-600">{proof.referenceCode}</strong></div>
+                            <div>Amount: <strong className="text-emerald-700">${proof.amountPaid}</strong></div>
+                          </div>
+                          {(tx.payment_proof_url || proof.receiptUrl) && (
+                            <div className="pt-1">
+                              <a
+                                href={tx.payment_proof_url || proof.receiptUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 text-blue-600 font-bold hover:underline text-[11px]"
+                              >
+                                View Attached Wire Receipt <ExternalLink className="w-3 h-3" />
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Escrow Action Controls */}
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                      
+                      {/* Stage 1: Approve Deposit */}
+                      {(status === 'pending_payment' || status === 'payment_verifying') && (
+                        <form action={adminConfirmEscrowDeposit.bind(null, tx.id) as any}>
+                          <button
+                            type="submit"
+                            className="text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white py-2 px-3.5 rounded-lg transition flex items-center gap-1.5 shadow-sm"
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                            Approve Deposit & Request Credentials
+                          </button>
+                        </form>
+                      )}
+
+                      {/* Stage 2: Mark credentials in escrow check */}
                       {status === 'payment_confirmed' && (
                         <form action={adminAdvanceEscrow.bind(null, tx.id, 'agent_verifying') as any}>
                           <button
@@ -79,6 +138,7 @@ export default async function AdminTransactionsPage() {
                         </form>
                       )}
 
+                      {/* Stage 3: Start 7-day hold */}
                       {status === 'agent_verifying' && (
                         <form action={adminAdvanceEscrow.bind(null, tx.id, 'buyer_7_day_evaluation') as any}>
                           <button
@@ -90,6 +150,7 @@ export default async function AdminTransactionsPage() {
                         </form>
                       )}
 
+                      {/* Stage 4: Release Payout */}
                       {status === 'buyer_7_day_evaluation' && (
                         <form action={adminAdvanceEscrow.bind(null, tx.id, 'completed') as any}>
                           <button
