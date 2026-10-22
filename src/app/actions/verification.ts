@@ -46,15 +46,25 @@ export async function updateVerificationStatus(verificationId: string, newStatus
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
-  const { error } = await supabase
+  const { data: updatedVerification, error } = await supabase
     .from('verifications')
     .update({ 
       status: newStatus,
       admin_notes: adminNotes 
     })
     .eq('id', verificationId)
+    .select('user_id')
+    .single()
 
   if (error) return { error: error.message }
+
+  // Sync is_verified on the user's public profile
+  if (updatedVerification?.user_id) {
+    await supabase
+      .from('user_profiles')
+      .update({ is_verified: newStatus === 'verified' })
+      .eq('id', updatedVerification.user_id)
+  }
 
   revalidatePath('/admin/verifications')
   return { success: true }
