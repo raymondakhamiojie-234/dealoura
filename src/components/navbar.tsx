@@ -64,9 +64,15 @@ export default function Navbar() {
             </div>
 
             {/* Desktop Navigation Links */}
-            <div className="hidden md:flex space-x-8 items-center h-full">
-              <Link href="/" className="text-sm font-bold text-gray-900 dark:text-white border-b-2 border-blue-600 h-full flex items-center px-1">
+            <div className="hidden md:flex space-x-6 items-center h-full">
+              <Link href="/" className="text-sm font-bold text-gray-900 dark:text-white hover:text-blue-600 transition flex items-center px-1">
                 HOME
+              </Link>
+              <Link href="/#browse" className="text-sm font-bold text-gray-600 dark:text-gray-300 hover:text-blue-600 transition flex items-center px-1">
+                BROWSE
+              </Link>
+              <Link href="/sell" className="text-xs font-extrabold text-blue-600 bg-blue-50 hover:bg-blue-100 py-1.5 px-3 rounded-full border border-blue-200 transition flex items-center">
+                SELL ACCOUNT
               </Link>
             </div>
 
@@ -130,6 +136,8 @@ export default function Navbar() {
           <div className="md:hidden border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900">
             <div className="pt-2 pb-3 space-y-1">
               <Link href="/" className="bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-600 text-blue-700 dark:text-blue-500 block pl-3 pr-4 py-2 text-base font-medium">HOME</Link>
+              <Link href="/#browse" className="border-l-4 border-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 block pl-3 pr-4 py-2 text-base font-medium">BROWSE</Link>
+              <Link href="/sell" className="border-l-4 border-transparent text-blue-600 font-bold hover:bg-blue-50 block pl-3 pr-4 py-2 text-base">SELL ACCOUNT</Link>
               
               {user ? (
                 <>
