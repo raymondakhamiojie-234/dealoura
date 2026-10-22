@@ -20,18 +20,15 @@ export default async function AdminVerificationsPage() {
     .order('created_at', { ascending: true })
 
   return (
-    <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-      <div className="flex space-x-4 mb-8">
-        <Link href="/admin/listings" className="text-gray-500 hover:text-indigo-600 font-medium">Pending Listings</Link>
-        <span className="text-gray-300">|</span>
-        <Link href="/admin/verifications" className="text-indigo-600 font-bold border-b-2 border-indigo-600 pb-1">Verifications</Link>
-        <span className="text-gray-300">|</span>
-        <Link href="/admin/disputes" className="text-gray-500 hover:text-indigo-600 font-medium">Disputes</Link>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-black text-gray-900">Review KYC Verifications</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Inspect submitted government identity and ownership evidence documents before granting the Verified badge.
+        </p>
       </div>
 
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Review Verifications</h1>
-
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         {verifications && verifications.length > 0 ? (
           <ul className="divide-y divide-gray-200">
             {verifications.map((v) => (

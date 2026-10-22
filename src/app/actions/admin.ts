@@ -3,44 +3,82 @@
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
 
-export async function approveListing(listingId: string) {
+async function assertAdmin() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) {
-    return { error: 'Not authenticated' }
+    throw new Error('Not authenticated')
   }
 
-  // In a real app, verify the user has the 'admin' role here.
-  // For now, we will allow the update for testing the flow.
-  
-  const { error } = await supabase
-    .from('listings')
-    .update({ status: 'approved' })
-    .eq('id', listingId)
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
 
-  if (error) {
-    return { error: error.message }
+  if (!profile || profile.role !== 'admin') {
+    throw new Error('Forbidden: Administrator access required')
   }
 
-  revalidatePath('/admin/listings')
-  revalidatePath('/')
-  return { success: true }
+  return { supabase, user }
+}
+
+export async function approveListing(listingId: string) {
+  try {
+    const { supabase } = await assertAdmin()
+
+    const { error } = await supabase
+      .from('listings')
+      .update({ status: 'approved' })
+      .eq('id', listingId)
+
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin/listings')
+    revalidatePath('/admin')
+    revalidatePath('/')
+    return { success: true }
+  } catch (err: any) {
+    return { error: err.message || 'Unauthorized' }
+  }
 }
 
 export async function rejectListing(listingId: string) {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  try {
+    const { supabase } = await assertAdmin()
 
-  if (!user) return { error: 'Not authenticated' }
+    const { error } = await supabase
+      .from('listings')
+      .update({ status: 'rejected' })
+      .eq('id', listingId)
 
-  const { error } = await supabase
-    .from('listings')
-    .update({ status: 'rejected' })
-    .eq('id', listingId)
+    if (error) return { error: error.message }
 
-  if (error) return { error: error.message }
+    revalidatePath('/admin/listings')
+    revalidatePath('/admin')
+    return { success: true }
+  } catch (err: any) {
+    return { error: err.message || 'Unauthorized' }
+  }
+}
 
-  revalidatePath('/admin/listings')
-  return { success: true }
+export async function adminAdvanceEscrow(transactionId: string, nextStatus: string) {
+  try {
+    const { supabase } = await assertAdmin()
+
+    const { error } = await supabase
+      .from('transactions')
+      .update({ status: nextStatus })
+      .eq('id', transactionId)
+
+    if (error) return { error: error.message }
+
+    revalidatePath('/admin/transactions')
+    revalidatePath('/admin')
+    revalidatePath(`/dashboard/transactions/${transactionId}`)
+    return { success: true }
+  } catch (err: any) {
+    return { error: err.message || 'Unauthorized' }
+  }
 }

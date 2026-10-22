@@ -22,18 +22,15 @@ export default async function AdminListingsPage() {
     .order('created_at', { ascending: false })
 
   return (
-    <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-      <div className="flex space-x-4 mb-8">
-        <Link href="/admin/listings" className="text-indigo-600 font-bold border-b-2 border-indigo-600 pb-1">Pending Listings</Link>
-        <span className="text-gray-300">|</span>
-        <Link href="/admin/verifications" className="text-gray-500 hover:text-indigo-600 font-medium">Verifications</Link>
-        <span className="text-gray-300">|</span>
-        <Link href="/admin/disputes" className="text-gray-500 hover:text-indigo-600 font-medium">Disputes</Link>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-black text-gray-900">Review Pending Listings</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Review accounts submitted by sellers before they become visible in the public marketplace.
+        </p>
       </div>
 
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard - Pending Listings</h1>
-
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         {pendingListings && pendingListings.length > 0 ? (
           <ul className="divide-y divide-gray-200">
             {pendingListings.map((listing) => (

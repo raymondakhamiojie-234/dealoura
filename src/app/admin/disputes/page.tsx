@@ -24,18 +24,15 @@ export default async function AdminDisputesPage() {
     .order('created_at', { ascending: true })
 
   return (
-    <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-      <div className="flex space-x-4 mb-8">
-        <Link href="/admin/listings" className="text-gray-500 hover:text-indigo-600 font-medium">Pending Listings</Link>
-        <span className="text-gray-300">|</span>
-        <Link href="/admin/verifications" className="text-gray-500 hover:text-indigo-600 font-medium">Verifications</Link>
-        <span className="text-gray-300">|</span>
-        <Link href="/admin/disputes" className="text-indigo-600 font-bold border-b-2 border-indigo-600 pb-1">Disputes</Link>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-black text-gray-900">Resolve Dispute Tickets</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Arbitrate contested transactions, inspect chat evidence, and release funds or refund buyers.
+        </p>
       </div>
 
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Review Disputes</h1>
-
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         {disputes && disputes.length > 0 ? (
           <ul className="divide-y divide-gray-200">
             {disputes.map((d) => (
