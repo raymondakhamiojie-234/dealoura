@@ -3,40 +3,33 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
+import { createNotification } from './notifications'
+import { renderNewMessageEmail } from '@/utils/email-templates'
 
 export async function sendMessage(formData: FormData) {
   const content = formData.get('content') as string
   const conversation_id = formData.get('conversation_id') as string
-  const receiver_id = formData.get('receiver_id') as string // Optional, just for logic checking
-  
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
   if (!user) return { error: 'Not authenticated' }
+  if (!content || !content.trim()) return { error: 'Message cannot be empty' }
 
-  // 1. If conversation_id is provided, just insert the message
-  if (conversation_id) {
-    const { error } = await supabase
-      .from('messages')
-      .insert({
-        conversation_id,
-        sender_id: user.id,
-        content
-      })
+  let targetConvoId = conversation_id
+  let shouldRedirect = false
 
-    if (error) return { error: error.message }
-    
-    revalidatePath(`/dashboard/messages/${conversation_id}`)
-    return { success: true }
-  }
+  // 1. If NO conversation_id, handle conversation discovery or creation
+  if (!targetConvoId) {
+    const listing_id = formData.get('listing_id') as string
+    const seller_id = formData.get('seller_id') as string
 
-  // 2. If NO conversation_id, it means we are starting a new conversation from a listing
-  const listing_id = formData.get('listing_id') as string
-  const seller_id = formData.get('seller_id') as string
+    if (!listing_id || !seller_id) {
+      return { error: 'Missing listing or seller information' }
+    }
 
-  if (listing_id && seller_id) {
     // Check if conversation already exists
-    let { data: existingConvo } = await supabase
+    const { data: existingConvo } = await supabase
       .from('conversations')
       .select('id')
       .eq('buyer_id', user.id)
@@ -44,10 +37,9 @@ export async function sendMessage(formData: FormData) {
       .eq('listing_id', listing_id)
       .maybeSingle()
 
-    let newConvoId = existingConvo?.id
-
-    // Create conversation if it doesn't exist
-    if (!newConvoId) {
+    if (existingConvo?.id) {
+      targetConvoId = existingConvo.id
+    } else {
       const { data: newConvo, error: convoError } = await supabase
         .from('conversations')
         .insert({
@@ -59,23 +51,75 @@ export async function sendMessage(formData: FormData) {
         .single()
 
       if (convoError) return { error: convoError.message }
-      newConvoId = newConvo.id
+      targetConvoId = newConvo.id
     }
-
-    // Insert the first message
-    const { error: msgError } = await supabase
-      .from('messages')
-      .insert({
-        conversation_id: newConvoId,
-        sender_id: user.id,
-        content
-      })
-
-    if (msgError) return { error: msgError.message }
-
-    revalidatePath('/dashboard/messages')
-    redirect(`/dashboard/messages/${newConvoId}`)
+    shouldRedirect = true
   }
 
-  return { error: 'Invalid parameters' }
+  // 2. Insert the message
+  const { error: msgError } = await supabase
+    .from('messages')
+    .insert({
+      conversation_id: targetConvoId,
+      sender_id: user.id,
+      content: content.trim()
+    })
+
+  if (msgError) return { error: msgError.message }
+
+  // 3. Notify the counterparty via in-app & Resend email
+  try {
+    const { data: convo } = await supabase
+      .from('conversations')
+      .select(`
+        buyer_id,
+        seller_id,
+        buyer:buyer_id (username),
+        seller:seller_id (username)
+      `)
+      .eq('id', targetConvoId)
+      .single()
+
+    if (convo) {
+      const isBuyer = convo.buyer_id === user.id
+      const recipientId = isBuyer ? convo.seller_id : convo.buyer_id
+      const senderUsername = isBuyer
+        ? (convo.buyer as any)?.username || 'User'
+        : (convo.seller as any)?.username || 'Seller'
+      const recipientName = isBuyer
+        ? (convo.seller as any)?.username || 'Seller'
+        : (convo.buyer as any)?.username || 'User'
+
+      const snippet = content.trim().length > 120
+        ? `${content.trim().slice(0, 117)}...`
+        : content.trim()
+
+      const emailHtml = renderNewMessageEmail({
+        recipientName,
+        senderUsername,
+        snippet,
+        conversationId: targetConvoId
+      })
+
+      await createNotification(
+        recipientId,
+        `New Message from @${senderUsername}`,
+        `@${senderUsername}: "${snippet}"`,
+        `/dashboard/messages/${targetConvoId}`,
+        'message',
+        emailHtml
+      )
+    }
+  } catch (err) {
+    console.warn('Non-blocking chat notification warning:', err)
+  }
+
+  revalidatePath(`/dashboard/messages/${targetConvoId}`)
+  revalidatePath('/dashboard/messages')
+
+  if (shouldRedirect) {
+    redirect(`/dashboard/messages/${targetConvoId}`)
+  }
+
+  return { success: true }
 }

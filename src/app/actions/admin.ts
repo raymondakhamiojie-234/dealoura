@@ -82,3 +82,42 @@ export async function adminAdvanceEscrow(transactionId: string, nextStatus: stri
     return { error: err.message || 'Unauthorized' }
   }
 }
+
+export async function sendTestEmailAction(targetEmail?: string) {
+  try {
+    const { supabase, user } = await assertAdmin()
+    
+    let recipient = targetEmail?.trim()
+    if (!recipient) {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('email')
+        .eq('id', user.id)
+        .single()
+      recipient = profile?.email || user.email
+    }
+
+    if (!recipient) {
+      return { error: 'No recipient email address found. Please specify an email.' }
+    }
+
+    const { sendEmail } = await import('@/utils/resend')
+    const { renderTestEmail } = await import('@/utils/email-templates')
+
+    const emailHtml = renderTestEmail({ adminEmail: recipient })
+
+    const result = await sendEmail({
+      to: recipient,
+      subject: 'Dealoura Resend Test Notification',
+      html: emailHtml
+    })
+
+    if (!result.success) {
+      return { error: typeof result.error === 'string' ? result.error : JSON.stringify(result.error) || 'Resend API key missing or invalid' }
+    }
+
+    return { success: true, recipient }
+  } catch (err: any) {
+    return { error: err.message || 'Unauthorized' }
+  }
+}

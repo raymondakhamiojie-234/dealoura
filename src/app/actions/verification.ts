@@ -3,6 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
+import { createNotification } from './notifications'
+import { renderKycStatusEmail } from '@/utils/email-templates'
 
 export async function submitVerification(formData: FormData) {
   const file = formData.get('evidence') as File
@@ -60,10 +62,45 @@ export async function updateVerificationStatus(verificationId: string, newStatus
 
   // Sync is_verified on the user's public profile
   if (updatedVerification?.user_id) {
+    const isApproved = newStatus === 'verified'
+
     await supabase
       .from('user_profiles')
-      .update({ is_verified: newStatus === 'verified' })
+      .update({ is_verified: isApproved })
       .eq('id', updatedVerification.user_id)
+
+    // Send in-app and email alert to user
+    try {
+      const { data: targetProfile } = await supabase
+        .from('user_profiles')
+        .select('username')
+        .eq('id', updatedVerification.user_id)
+        .single()
+
+      const username = targetProfile?.username || 'Seller'
+
+      const emailHtml = renderKycStatusEmail({
+        recipientName: username,
+        status: isApproved ? 'verified' : 'rejected',
+        notes: adminNotes
+      })
+
+      const title = isApproved ? 'KYC Verification Approved!' : 'KYC Verification Update'
+      const message = isApproved
+        ? 'Congratulations! Your identity has been verified. The Verified Seller badge is now active on your profile and listings.'
+        : `Your KYC verification was not approved. ${adminNotes ? `Reason: ${adminNotes}` : 'Please review and re-submit your documents.'}`
+
+      await createNotification(
+        updatedVerification.user_id,
+        title,
+        message,
+        '/dashboard/profile',
+        'system',
+        emailHtml
+      )
+    } catch (notifErr) {
+      console.warn('KYC notification warning:', notifErr)
+    }
   }
 
   revalidatePath('/admin/verifications')

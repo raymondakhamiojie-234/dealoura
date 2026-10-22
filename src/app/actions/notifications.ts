@@ -1,63 +1,74 @@
+'use server'
+
 import { createClient } from '@/utils/supabase/server'
 import { sendEmail } from '@/utils/resend'
+import { wrapEmailLayout } from '@/utils/email-templates'
 import { revalidatePath } from 'next/cache'
 
+export type NotificationType = 'message' | 'offer' | 'transaction' | 'system'
+
 /**
- * Creates an in-app notification and optionally sends an email if the user has an email address.
+ * Creates an in-app notification and dispatches a branded email via Resend (non-blocking).
  */
 export async function createNotification(
   userId: string,
   title: string,
   message: string,
-  link?: string
+  link?: string,
+  type: NotificationType = 'system',
+  customEmailHtml?: string
 ) {
   const supabase = await createClient()
 
-  // 1. Create the in-app notification
-  const { error: notifError } = await supabase
-    .from('notifications')
-    .insert({
-      user_id: userId,
-      title,
-      message,
-      link,
-      is_read: false
-    })
+  // 1. Insert in-app notification
+  try {
+    const { error: notifError } = await supabase
+      .from('notifications')
+      .insert({
+        user_id: userId,
+        type,
+        title,
+        message,
+        link: link || null,
+        is_read: false
+      })
 
-  if (notifError) {
-    console.error('Failed to create in-app notification:', notifError)
-    return { success: false, error: notifError.message }
+    if (notifError) {
+      console.warn('In-app notification note:', notifError.message)
+    }
+  } catch (err) {
+    console.warn('Exception creating in-app notification:', err)
   }
 
-  // 2. Fetch the user's email to send a Resend email
-  const { data: profile } = await supabase
-    .from('user_profiles')
-    .select('email, username')
-    .eq('id', userId)
-    .single()
+  // 2. Fetch user's profile to dispatch branded Resend email
+  try {
+    const { data: profile } = await supabase
+      .from('user_profiles')
+      .select('email, username')
+      .eq('id', userId)
+      .single()
 
-  if (profile?.email) {
-    // 3. Send email using our Resend utility
-    const htmlContent = `
-      <div style="font-family: sans-serif; max-w: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;">
-        <h2 style="color: #4f46e5;">Dealoura</h2>
-        <p style="font-size: 16px; color: #374151;">Hi ${profile.username},</p>
-        <p style="font-size: 16px; color: #374151; font-weight: bold;">${title}</p>
-        <p style="font-size: 16px; color: #4b5563;">${message}</p>
-        ${
-          link 
-            ? `<a href="https://dealoura.com${link}" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">View Details</a>`
-            : ''
-        }
-        <p style="font-size: 14px; color: #9ca3af; margin-top: 30px;">This is an automated message from Dealoura.</p>
-      </div>
-    `
+    if (profile?.email) {
+      const emailHtml = customEmailHtml || wrapEmailLayout({
+        title: `Dealoura: ${title}`,
+        headline: title,
+        recipientName: profile.username || 'there',
+        badgeText: type === 'offer' ? 'Offer Alert' : type === 'transaction' ? 'Escrow Update' : type === 'message' ? 'New Message' : 'Notification',
+        badgeColor: type === 'offer' ? 'blue' : type === 'transaction' ? 'green' : 'amber',
+        contentHtml: `<p>${message}</p>`,
+        ctaText: link ? 'View Details' : undefined,
+        ctaUrl: link
+      })
 
-    await sendEmail({
-      to: profile.email,
-      subject: `Dealoura: ${title}`,
-      html: htmlContent
-    })
+      // Send asynchronously without throwing
+      await sendEmail({
+        to: profile.email,
+        subject: `Dealoura: ${title}`,
+        html: emailHtml
+      })
+    }
+  } catch (emailErr) {
+    console.warn('Non-blocking email delivery warning:', emailErr)
   }
 
   return { success: true }

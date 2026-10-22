@@ -11,6 +11,7 @@ import {
   Clock,
   CheckCircle2,
 } from 'lucide-react'
+import { AdminEmailTestCard } from '@/components/admin-email-test-card'
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient()
@@ -133,6 +134,9 @@ export default async function AdminDashboardPage() {
           <span className="text-xs text-gray-400 mt-2">Registered Accounts</span>
         </div>
       </div>
+
+      {/* Resend Email Diagnostic Card */}
+      <AdminEmailTestCard />
 
       {/* Recent Escrow Pipeline Table */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
