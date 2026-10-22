@@ -1,16 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { login } from '@/app/actions/auth'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 import { GoogleSignInButton } from '@/components/google-sign-in-button'
 
-export default function LoginPage() {
+function LoginForm() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectUrl = searchParams.get('redirect') || searchParams.get('next') || '/'
 
   async function handleSubmit(formData: FormData) {
     setLoading(true)
@@ -51,6 +52,9 @@ export default function LoginPage() {
               {error}
             </div>
           )}
+
+          {/* Hidden redirect target */}
+          <input type="hidden" name="redirect" value={redirectUrl} />
           
           <div className="space-y-4 rounded-md shadow-sm">
             <div>
@@ -101,11 +105,19 @@ export default function LoginPage() {
 
         <p className="mt-10 text-center text-sm text-gray-500">
           Not a member?{' '}
-          <Link href="/register" className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">
+          <Link href={redirectUrl !== '/' ? `/register?redirect=${encodeURIComponent(redirectUrl)}` : '/register'} className="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">
             Register now
           </Link>
         </p>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-gray-50"><p className="text-gray-400 text-sm">Loading...</p></div>}>
+      <LoginForm />
+    </Suspense>
   )
 }

@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
+import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import {
   ShieldCheck,
@@ -17,9 +18,25 @@ import {
   Hash
 } from 'lucide-react'
 
-export default async function SellLandingPage() {
+export default async function SellLandingPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ preview?: string }>
+}) {
+  const params = searchParams ? await searchParams : {}
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  let user = null
+  try {
+    const { data } = await supabase.auth.getUser()
+    user = data?.user || null
+  } catch {
+    user = null
+  }
+
+  // If already logged in, navigate directly to listing creation flow unless preview requested
+  if (user && !params.preview) {
+    redirect('/dashboard/seller/listings/new')
+  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC]">

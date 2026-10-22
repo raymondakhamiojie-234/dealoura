@@ -32,10 +32,10 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-bold mb-4 uppercase text-sm tracking-wider">Marketplace</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/shop" className="hover:text-blue-400 transition">Browse Accounts</Link></li>
+              <li><Link href="/#browse" className="hover:text-blue-400 transition">Browse Accounts</Link></li>
               <li><Link href="/sell" className="hover:text-blue-400 transition">Sell Your Account</Link></li>
-              <li><Link href="/escrow" className="hover:text-blue-400 transition">How Escrow Works</Link></li>
-              <li><Link href="/pricing" className="hover:text-blue-400 transition">Fees & Pricing</Link></li>
+              <li><Link href="/sell" className="hover:text-blue-400 transition">How Escrow Works</Link></li>
+              <li><Link href="/sell" className="hover:text-blue-400 transition">Fees & Pricing</Link></li>
             </ul>
           </div>
 
@@ -43,10 +43,10 @@ export default function Footer() {
           <div>
             <h3 className="text-white font-bold mb-4 uppercase text-sm tracking-wider">Support</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/faq" className="hover:text-blue-400 transition">Help Center / FAQ</Link></li>
-              <li><Link href="/contact" className="hover:text-blue-400 transition">Contact Us</Link></li>
-              <li><Link href="/disputes" className="hover:text-blue-400 transition">Report an Issue</Link></li>
-              <li><Link href="/verification" className="hover:text-blue-400 transition">ID Verification Process</Link></li>
+              <li><Link href="/sell" className="hover:text-blue-400 transition">Help Center / FAQ</Link></li>
+              <li><a href="mailto:support@dealoura.com" className="hover:text-blue-400 transition">Contact Us</a></li>
+              <li><Link href="/dashboard/messages" className="hover:text-blue-400 transition">Support & Messages</Link></li>
+              <li><Link href="/dashboard/profile/verification" className="hover:text-blue-400 transition">ID Verification Process</Link></li>
             </ul>
           </div>
 
