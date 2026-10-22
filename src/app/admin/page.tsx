@@ -12,6 +12,7 @@ import {
   CheckCircle2,
 } from 'lucide-react'
 import { AdminEmailTestCard } from '@/components/admin-email-test-card'
+import { AdminEscrowBankCard } from '@/components/admin-escrow-bank-card'
 
 export default async function AdminDashboardPage() {
   const supabase = await createClient()
@@ -134,6 +135,9 @@ export default async function AdminDashboardPage() {
           <span className="text-xs text-gray-400 mt-2">Registered Accounts</span>
         </div>
       </div>
+
+      {/* Escrow Bank Account Settings & Interactive Preview */}
+      <AdminEscrowBankCard />
 
       {/* Resend Email Diagnostic Card */}
       <AdminEmailTestCard />

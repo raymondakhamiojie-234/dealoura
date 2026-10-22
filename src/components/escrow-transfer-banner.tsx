@@ -16,6 +16,7 @@ import {
   Edit2
 } from 'lucide-react'
 import { submitPaymentTransferProof, adminConfirmEscrowDeposit } from '@/app/actions/transactions'
+import { ESCROW_BANK_CONFIG } from '@/config/escrow-bank'
 
 interface PaymentProof {
   payerName: string
@@ -64,10 +65,10 @@ export function EscrowTransferBanner({
 
   // Configurable Escrow Bank Account Details
   const bankDetails = [
-    { label: 'Bank Name', value: 'Mercury Bank / Evolve Bank & Trust', copyValue: 'Mercury Bank' },
-    { label: 'Beneficiary / Account Name', value: 'Dealoura Escrow Holdings Ltd', copyValue: 'Dealoura Escrow Holdings Ltd' },
-    { label: 'Account Number / IBAN', value: '0834 9182 7461', copyValue: '083491827461' },
-    { label: 'Routing / SWIFT Code', value: '021000021 / EVBLUS33', copyValue: '021000021' },
+    { label: 'Bank Name', value: ESCROW_BANK_CONFIG.bankName, copyValue: ESCROW_BANK_CONFIG.bankName },
+    { label: 'Beneficiary / Account Name', value: ESCROW_BANK_CONFIG.accountName, copyValue: ESCROW_BANK_CONFIG.accountName },
+    { label: 'Account Number / IBAN', value: ESCROW_BANK_CONFIG.accountNumber, copyValue: ESCROW_BANK_CONFIG.accountNumber.replace(/\s+/g, '') },
+    { label: 'Routing / SWIFT Code', value: ESCROW_BANK_CONFIG.routingOrSwiftCode, copyValue: ESCROW_BANK_CONFIG.routingOrSwiftCode },
     { label: 'Payment Reference (Mandatory)', value: referenceCode, copyValue: referenceCode, highlight: true },
     { label: 'Total Payable Amount', value: `$${totalAmount.toLocaleString()} USD`, copyValue: `${totalAmount}`, highlight: true }
   ]
