@@ -74,7 +74,7 @@ export default async function SellerProfilePage(props: {
       listing_media (media_url, display_order)
     `)
     .eq('seller_id', seller.id)
-    .eq('status', 'approved')
+    .in('status', ['approved', 'sold'])
     .order('created_at', { ascending: false })
 
   // 6. Compute statistics with fallbacks
@@ -314,11 +314,28 @@ export default async function SellerProfilePage(props: {
                   ? `${Number(listing.followers_count).toLocaleString()} followers`
                   : null
 
+                const isSold = listing.status === 'sold'
+                const platformBg = listing.platform === 'Facebook'
+                  ? 'bg-[#1877F2]'
+                  : listing.platform === 'YouTube'
+                  ? 'bg-red-600'
+                  : listing.platform === 'TikTok'
+                  ? 'bg-black'
+                  : listing.platform === 'Instagram'
+                  ? 'bg-pink-600'
+                  : listing.platform === 'Discord'
+                  ? 'bg-[#5865F2]'
+                  : 'bg-blue-600'
+
                 return (
                   <Link
                     key={listing.id}
                     href={`/marketplace/listings/${listing.id}`}
-                    className="group bg-white p-4 rounded-2xl border border-gray-100 hover:border-blue-200 shadow-sm hover:shadow-md transition-all flex flex-col h-full"
+                    className={`group bg-white p-4 rounded-2xl border transition-all flex flex-col h-full ${
+                      isSold
+                        ? 'opacity-65 hover:opacity-85 border-gray-200 shadow-none'
+                        : 'border-gray-100 hover:border-blue-200 shadow-sm hover:shadow-md'
+                    }`}
                   >
                     {/* Media Thumbnail */}
                     <div className="w-full aspect-[4/3] bg-slate-100 rounded-xl mb-3 relative overflow-hidden flex items-center justify-center">
@@ -326,7 +343,9 @@ export default async function SellerProfilePage(props: {
                         <img
                           src={mainImage}
                           alt={listing.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          className={`w-full h-full object-cover transition-transform duration-300 ${
+                            isSold ? 'grayscale-[20%]' : 'group-hover:scale-105'
+                          }`}
                         />
                       ) : (
                         <div className="flex flex-col items-center justify-center text-center p-2">
@@ -337,17 +356,30 @@ export default async function SellerProfilePage(props: {
                         </div>
                       )}
 
+                      {/* Sold Full Overlay */}
+                      {isSold && (
+                        <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[1px] flex items-center justify-center z-10">
+                          <span className="bg-rose-600 text-white font-black text-xs uppercase px-3 py-1 rounded-full shadow-lg tracking-wider border border-white/20">
+                            SOLD
+                          </span>
+                        </div>
+                      )}
+
                       {/* Platform Pill */}
-                      <span className="absolute top-2 left-2 bg-blue-600/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm">
+                      <span className={`absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm z-20 ${platformBg}`}>
                         {listing.platform || 'Social'}
                       </span>
 
-                      {/* Monetized Badge */}
-                      {listing.monetized && (
+                      {/* Sold or Monetized Badge */}
+                      {isSold ? (
+                        <span className="absolute top-2 right-2 bg-rose-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm uppercase tracking-wider z-20">
+                          SOLD
+                        </span>
+                      ) : listing.monetized ? (
                         <span className="absolute top-2 right-2 bg-emerald-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded shadow-sm uppercase tracking-wider">
                           Monetized
                         </span>
-                      )}
+                      ) : null}
                     </div>
 
                     {/* Metadata */}
@@ -359,17 +391,28 @@ export default async function SellerProfilePage(props: {
                     </div>
 
                     {/* Title */}
-                    <h3 className="text-xs text-gray-900 font-bold line-clamp-2 h-8 mb-2 group-hover:text-blue-600 transition">
+                    <h3 className={`text-xs font-bold line-clamp-2 h-8 mb-2 transition ${
+                      isSold ? 'text-gray-500' : 'text-gray-900 group-hover:text-blue-600'
+                    }`}>
                       {listing.title}
                     </h3>
 
                     {/* Price & Action */}
                     <div className="mt-auto pt-3 border-t border-gray-50 flex items-center justify-between">
-                      <p className="text-base font-black text-blue-600">
-                        ${listing.price}
-                      </p>
-                      <span className="text-xs font-bold text-gray-400 group-hover:text-blue-600 flex items-center gap-1 transition">
-                        View <ArrowRight className="w-3 h-3" />
+                      <div className="flex items-center gap-1.5">
+                        <p className={`text-base font-black ${isSold ? 'text-gray-400 line-through' : 'text-blue-600'}`}>
+                          ${listing.price}
+                        </p>
+                        {isSold && (
+                          <span className="text-[9px] font-black text-rose-600 uppercase bg-rose-50 px-1 py-0.5 rounded border border-rose-200">
+                            SOLD
+                          </span>
+                        )}
+                      </div>
+                      <span className={`text-xs font-bold flex items-center gap-1 transition ${
+                        isSold ? 'text-rose-600 font-bold' : 'text-gray-400 group-hover:text-blue-600'
+                      }`}>
+                        {isSold ? 'SOLD' : <>View <ArrowRight className="w-3 h-3" /></>}
                       </span>
                     </div>
                   </Link>

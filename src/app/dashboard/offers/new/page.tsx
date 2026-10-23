@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { makeOffer } from '@/app/actions/offers'
 import { redirect, notFound } from 'next/navigation'
+import Link from 'next/link'
 
 export default async function NewOfferPage(props: { searchParams: Promise<{ listing_id: string }> }) {
   const searchParams = await props.searchParams;
@@ -14,11 +15,27 @@ export default async function NewOfferPage(props: { searchParams: Promise<{ list
 
   const { data: listing } = await supabase
     .from('listings')
-    .select('title, price, seller_id')
+    .select('title, price, seller_id, status')
     .eq('id', listingId)
     .single()
 
   if (!listing) notFound()
+
+  // Prevent making offer on sold listing
+  if (listing.status === 'sold') {
+    return (
+      <div className="max-w-2xl mx-auto py-10 px-4">
+        <div className="bg-rose-50 border border-rose-200 text-rose-800 p-6 rounded-2xl text-center space-y-3">
+          <span className="inline-block px-3 py-1 bg-rose-600 text-white text-xs font-black rounded-full uppercase">SOLD</span>
+          <h2 className="text-xl font-bold">This Account Has Already Been Sold</h2>
+          <p className="text-sm text-rose-600">This listing has been sold and closed through Dealoura Escrow. You can browse other available verified channels.</p>
+          <Link href="/#browse" className="inline-block px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl transition">
+            Browse Available Accounts
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   // Prevent making offer on own listing
   if (listing.seller_id === user.id) {

@@ -22,10 +22,15 @@ export async function makeOffer(formData: FormData) {
       id,
       seller_id,
       title,
+      status,
       seller:seller_id (username, email)
     `)
     .eq('id', listing_id)
     .single()
+
+  if (listing?.status === 'sold') {
+    return { error: 'This listing has already been sold and closed through escrow' }
+  }
 
   // Fetch buyer's username
   const { data: buyerProfile } = await supabase

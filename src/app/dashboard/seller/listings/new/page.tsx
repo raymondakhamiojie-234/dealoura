@@ -42,13 +42,13 @@ export default async function NewListingPage() {
                 required
                 className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2.5 px-3 border bg-white"
               >
+                <option value="Facebook">Facebook Page / Group</option>
                 <option value="YouTube">YouTube Channel</option>
                 <option value="TikTok">TikTok Account</option>
                 <option value="Instagram">Instagram Page</option>
                 <option value="Twitter / X">Twitter / X Account</option>
                 <option value="Discord">Discord Server</option>
                 <option value="Twitch">Twitch Channel</option>
-                <option value="Facebook">Facebook Page</option>
               </select>
             </div>
 

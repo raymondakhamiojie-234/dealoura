@@ -1,6 +1,7 @@
 import { createClient } from '@/utils/supabase/server'
 import { updateProfile, changePassword } from '@/app/actions/profile'
 import { redirect } from 'next/navigation'
+import Link from 'next/link'
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -19,14 +20,33 @@ export default async function ProfilePage() {
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Your Profile</h1>
-        <a 
-          href="/dashboard/profile/verification" 
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700"
-        >
-          Verify Account
-        </a>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Your Profile</h1>
+          <p className="text-xs text-gray-500 mt-1">Manage your account information, seller reputation, and listings.</p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Link
+            href="/dashboard/seller/listings"
+            className="inline-flex items-center px-3.5 py-2 border border-gray-200 text-xs font-bold rounded-lg shadow-xs text-gray-700 bg-white hover:bg-gray-50 transition"
+          >
+            My Listings
+          </Link>
+          {profile?.username && (
+            <Link
+              href={`/seller/${profile.username}`}
+              className="inline-flex items-center px-3.5 py-2 border border-blue-200 text-xs font-bold rounded-lg shadow-xs text-blue-700 bg-blue-50 hover:bg-blue-100 transition"
+            >
+              Public Profile
+            </Link>
+          )}
+          <a 
+            href="/dashboard/profile/verification" 
+            className="inline-flex items-center px-3.5 py-2 border border-transparent text-xs font-bold rounded-lg shadow-xs text-white bg-indigo-600 hover:bg-indigo-700 transition"
+          >
+            Verify Account
+          </a>
+        </div>
       </div>
 
       <div className="bg-white shadow rounded-lg p-6 mb-8">

@@ -6,6 +6,7 @@ import { Search, X, SlidersHorizontal, Check, ArrowUpDown } from 'lucide-react'
 
 const PLATFORMS = [
   'All',
+  'Facebook',
   'YouTube',
   'TikTok',
   'Instagram',

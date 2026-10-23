@@ -25,6 +25,7 @@ export default async function ListingDetailsPage(props: { params: Promise<{ id: 
   }
 
   const isOwner = user?.id === listing.seller_id
+  const isSold = listing.status === 'sold'
   const images = (listing.listing_media || []).sort(
     (a: any, b: any) => (a.display_order || 0) - (b.display_order || 0)
   )
@@ -32,6 +33,10 @@ export default async function ListingDetailsPage(props: { params: Promise<{ id: 
   const followersDisplay = listing.followers_count
     ? Number(listing.followers_count).toLocaleString()
     : 'N/A'
+
+  const platformBg = listing.platform === 'Facebook'
+    ? 'bg-[#1877F2] text-white'
+    : 'bg-blue-100 text-blue-800'
 
   return (
     <div className="max-w-7xl mx-auto py-10 px-4 sm:px-6 lg:px-8">
@@ -45,7 +50,25 @@ export default async function ListingDetailsPage(props: { params: Promise<{ id: 
         </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {/* Top Sold Banner Alert */}
+      {isSold && (
+        <div className="mb-6 bg-rose-50 border border-rose-200 rounded-2xl p-4 sm:p-5 flex items-center justify-between gap-4 shadow-xs">
+          <div className="flex items-center gap-3">
+            <span className="px-3 py-1 bg-rose-600 text-white text-xs font-black rounded-full uppercase tracking-wider shrink-0">
+              SOLD
+            </span>
+            <div>
+              <h4 className="text-sm font-bold text-rose-900">This account has been sold</h4>
+              <p className="text-xs text-rose-700">The escrow transaction for this asset has been completed.</p>
+            </div>
+          </div>
+          <Link href="/#browse" className="text-xs font-bold text-rose-800 hover:underline shrink-0 hidden sm:inline">
+            Browse Active &rarr;
+          </Link>
+        </div>
+      )}
+
+      <div className={`grid grid-cols-1 lg:grid-cols-12 gap-8 ${isSold ? 'opacity-85' : ''}`}>
         
         {/* Left Column: Image Proof Gallery & Description (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
@@ -68,14 +91,18 @@ export default async function ListingDetailsPage(props: { params: Promise<{ id: 
             {/* Title & Badge */}
             <div>
               <div className="flex items-center space-x-2 mb-2">
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800">
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${platformBg}`}>
                   {listing.platform || 'Account'}
                 </span>
-                {listing.monetized && (
+                {isSold ? (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-rose-100 text-rose-800 uppercase">
+                    SOLD
+                  </span>
+                ) : listing.monetized ? (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800">
                     <CheckCircle2 className="w-3 h-3 mr-1" /> Monetized
                   </span>
-                )}
+                ) : null}
                 {isOwner && (
                   <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-800">
                     Your Listing
@@ -97,7 +124,16 @@ export default async function ListingDetailsPage(props: { params: Promise<{ id: 
             {/* Price Card */}
             <div className="bg-slate-50 p-4 rounded-xl flex items-baseline justify-between border border-slate-100">
               <span className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Asking Price</span>
-              <span className="text-3xl font-black text-blue-600">${listing.price}</span>
+              <div className="flex items-baseline gap-2">
+                <span className={`text-3xl font-black ${isSold ? 'text-gray-400 line-through' : 'text-blue-600'}`}>
+                  ${listing.price}
+                </span>
+                {isSold && (
+                  <span className="bg-rose-600 text-white text-xs font-black px-2 py-0.5 rounded uppercase">
+                    SOLD
+                  </span>
+                )}
+              </div>
             </div>
 
             {/* Account Metrics Grid */}
@@ -120,7 +156,21 @@ export default async function ListingDetailsPage(props: { params: Promise<{ id: 
             </div>
 
             {/* Action Buttons */}
-            {!isOwner && user && (
+            {isSold ? (
+              <div className="space-y-3 pt-2">
+                <div className="w-full flex items-center justify-center py-3.5 px-6 border border-gray-200 rounded-xl bg-gray-100 text-gray-400 font-bold text-sm cursor-not-allowed">
+                  Listing Sold & Completed
+                </div>
+                {!isOwner && user && (
+                  <Link
+                    href={`/dashboard/messages/new?listing_id=${listing.id}&seller_id=${listing.seller_id}`}
+                    className="w-full flex items-center justify-center py-3 px-6 border border-gray-300 rounded-xl shadow-sm text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 transition"
+                  >
+                    Message Seller
+                  </Link>
+                )}
+              </div>
+            ) : !isOwner && user ? (
               <div className="space-y-3 pt-2">
                 <Link
                   href={`/dashboard/offers/new?listing_id=${listing.id}`}
@@ -135,9 +185,9 @@ export default async function ListingDetailsPage(props: { params: Promise<{ id: 
                   Message Seller
                 </Link>
               </div>
-            )}
+            ) : null}
 
-            {!user && (
+            {!user && !isSold && (
               <div className="bg-blue-50/50 rounded-xl p-5 text-center border border-blue-100">
                 <p className="text-sm text-gray-700 mb-3">Log in to contact the seller or submit an offer.</p>
                 <Link
