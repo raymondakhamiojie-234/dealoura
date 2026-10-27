@@ -229,7 +229,7 @@ export default async function SellLandingPage({
       </section>
 
       {/* 4. 3-Step Selling Guide */}
-      <section className="py-16 bg-white border-y border-gray-100">
+      <section id="how-it-works" className="py-16 bg-white border-y border-gray-100 scroll-mt-20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="text-center space-y-2">
             <span className="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
@@ -277,8 +277,8 @@ export default async function SellLandingPage({
         </div>
       </section>
 
-      {/* 5. Seller FAQ */}
-      <section className="py-16 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      {/* 5. Seller FAQ & Escrow Guide */}
+      <section id="escrow-guide" className="py-16 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 scroll-mt-20">
         <div className="text-center space-y-2">
           <h2 className="text-2xl sm:text-3xl font-black text-gray-900">
             Frequently Asked Questions

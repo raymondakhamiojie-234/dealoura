@@ -1,6 +1,27 @@
 import { createClient } from '@/utils/supabase/server'
 import Link from 'next/link'
-import { Truck, HeadphonesIcon, ShieldCheck, ChevronRight, ChevronLeft, MessageCircle, Smartphone, Zap, CheckCircle, Video, Camera, Hash, MessageSquare } from 'lucide-react'
+import { 
+  ShieldCheck, 
+  Lock, 
+  CheckCircle2, 
+  Zap, 
+  ArrowRight, 
+  Sparkles, 
+  Users, 
+  TrendingUp, 
+  DollarSign, 
+  AlertCircle,
+  HelpCircle,
+  Video,
+  Camera,
+  MessageCircle,
+  Smartphone,
+  ChevronRight,
+  Shield,
+  Clock,
+  Layers,
+  Award
+} from 'lucide-react'
 import { ScrollAnimation } from '@/components/scroll-animation'
 import { HeroSlider } from '@/components/hero-slider'
 import { MarketplaceFilterBar } from '@/components/marketplace-filter-bar'
@@ -18,7 +39,7 @@ export default async function Home(props: {
   const { q, platform, min_followers, monetized, sort } = searchParams
   const supabase = await createClient()
 
-  // Base query for approved listings
+  // Base query for approved and sold listings
   let query = supabase
     .from('listings')
     .select(`
@@ -62,165 +83,279 @@ export default async function Home(props: {
     query = query.order('created_at', { ascending: false })
   }
 
-  const { data: listings } = await query.limit(25)
+  const { data: listings } = await query.limit(30)
 
   return (
-    <div className="bg-white transition-colors duration-200 overflow-hidden">
+    <div className="bg-slate-50 min-h-screen text-slate-900 overflow-hidden font-sans">
       
-      {/* 1. Hero Section Slider */}
-      <ScrollAnimation direction="none" delay={0}>
-        <HeroSlider />
-      </ScrollAnimation>
+      {/* 1. Hero Section (Interactive Escrow Terminal) */}
+      <HeroSlider />
 
-      {/* 2. Features Bar */}
-      <div className="border-y border-blue-100 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center md:text-left">
-            <ScrollAnimation direction="up" delay={0.1}>
-              <div className="flex flex-col md:flex-row items-center md:items-start justify-center md:justify-start gap-4">
-                <div className="bg-blue-50 p-3 rounded-full shrink-0">
-                  <Zap className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 text-sm uppercase">Instant Transfer</h3>
-                  <p className="text-gray-500 text-xs mt-1">Get immediate access after payment</p>
-                </div>
-              </div>
-            </ScrollAnimation>
-            <ScrollAnimation direction="up" delay={0.2}>
-              <div className="flex flex-col md:flex-row items-center md:items-start justify-center md:justify-start gap-4">
-                <div className="bg-blue-50 p-3 rounded-full shrink-0">
-                  <ShieldCheck className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 text-sm uppercase">Escrow Protection</h3>
-                  <p className="text-gray-500 text-xs mt-1">Funds held securely until delivery</p>
-                </div>
-              </div>
-            </ScrollAnimation>
-            <ScrollAnimation direction="up" delay={0.3}>
-              <div className="flex flex-col md:flex-row items-center md:items-start justify-center md:justify-start gap-4">
-                <div className="bg-blue-50 p-3 rounded-full shrink-0">
-                  <CheckCircle className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 text-sm uppercase">Verified Sellers</h3>
-                  <p className="text-gray-500 text-xs mt-1">Every seller is strictly vetted</p>
-                </div>
-              </div>
-            </ScrollAnimation>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Promotional Bento Grid */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 h-auto lg:h-[500px]">
-          
-          {/* Left Large Banner */}
-          <ScrollAnimation direction="left" delay={0.1} className="lg:col-span-1">
-            <Link href="/?platform=TikTok#browse" className="bg-blue-50 h-full p-8 flex flex-col justify-end items-center text-center relative overflow-hidden group cursor-pointer min-h-[400px] rounded-2xl shadow-sm border border-blue-100 transition-shadow hover:shadow-md block">
-              <div className="absolute top-10 w-48 h-48 bg-white rounded-full flex items-center justify-center shadow-sm transition-transform group-hover:scale-105">
-                <Smartphone className="w-20 h-20 text-blue-500" />
-              </div>
-              <div className="relative z-10 mt-48">
-                <h3 className="text-gray-900 text-xl font-bold mb-1">High Engagement</h3>
-                <p className="text-gray-600 mb-4 text-sm">TikTok Accounts</p>
-                <span className="text-blue-600 text-xs font-bold border-b-2 border-blue-600 pb-0.5">VIEW CHANNELS</span>
-              </div>
-            </Link>
-          </ScrollAnimation>
-
-          {/* Middle Column */}
-          <div className="lg:col-span-1 flex flex-col gap-4">
-            <ScrollAnimation direction="up" delay={0.2} className="flex-1 flex">
-              <Link href="/?platform=YouTube#browse" className="bg-blue-50 w-full p-6 flex flex-col justify-center relative overflow-hidden group cursor-pointer min-h-[190px] rounded-2xl shadow-sm border border-blue-100 transition-shadow hover:shadow-md block">
-                 <div className="absolute -right-4 top-4 w-32 h-32 bg-white rounded-2xl shadow-sm flex items-center justify-center rotate-12 transition-transform group-hover:rotate-0">
-                   <Video className="w-16 h-16 text-red-500" />
-                 </div>
-                 <div className="relative z-10 w-2/3">
-                   <h3 className="text-gray-900 text-lg font-bold mb-1">Monetized<br/>YouTube</h3>
-                   <span className="text-blue-600 text-xs font-bold border-b-2 border-blue-600 pb-0.5 mt-2 inline-block">SHOP NOW</span>
-                 </div>
-              </Link>
-            </ScrollAnimation>
-            <ScrollAnimation direction="up" delay={0.3} className="flex-1 flex">
-              <Link href="/?platform=Twitter+%2F+X#browse" className="bg-blue-50 w-full p-6 flex flex-col items-center justify-end text-center relative overflow-hidden group cursor-pointer min-h-[190px] rounded-2xl shadow-sm border border-blue-100 transition-shadow hover:shadow-md block">
-                 <div className="absolute top-6 w-20 h-20 bg-white shadow-sm rounded-full flex items-center justify-center transition-transform group-hover:-translate-y-2">
-                   <span className="text-black font-black text-3xl">𝕏</span>
-                 </div>
-                 <div className="relative z-10">
-                   <h3 className="text-gray-900 font-bold">Verified X Handles</h3>
-                   <span className="text-blue-600 text-[11px] font-bold mt-1 inline-block">VIEW HANDLES</span>
-                 </div>
-              </Link>
-            </ScrollAnimation>
+      {/* 2. Four Pillars of Dealoura Escrow (Bento Grid) */}
+      <section className="py-16 sm:py-20 bg-white border-b border-slate-200/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-200/60">
+              Institutional Escrow Protection
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight mt-3">
+              Built so neither side has to take the risk.
+            </h2>
+            <p className="text-slate-500 text-sm sm:text-base mt-3 leading-relaxed">
+              Traditional trades fail because one party must send credentials or payment first. Dealoura acts as an impartial, audited middleman so every transaction is guaranteed.
+            </p>
           </div>
 
-          {/* Right Column */}
-          <div className="lg:col-span-2 flex flex-col gap-4">
-            <ScrollAnimation direction="right" delay={0.4} className="flex-1 flex">
-              <Link href="/?platform=Instagram#browse" className="bg-blue-50 w-full p-6 flex items-center justify-between relative overflow-hidden group cursor-pointer min-h-[190px] rounded-2xl shadow-sm border border-blue-100 transition-shadow hover:shadow-md block">
-                 <div className="relative z-10">
-                   <h3 className="text-gray-900 text-xl font-bold mb-1">Niche Instagram Pages</h3>
-                   <span className="text-pink-600 text-xs font-bold border-b-2 border-pink-500 pb-0.5 inline-block">EXPLORE THEMES</span>
-                 </div>
-                 <div className="w-20 h-20 bg-white shadow-sm rounded-2xl flex items-center justify-center transition-transform group-hover:scale-110">
-                   <Camera className="w-10 h-10 text-pink-500" />
-                 </div>
-              </Link>
-            </ScrollAnimation>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             
-            {/* Split row for Facebook & Discord */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
-              <ScrollAnimation direction="right" delay={0.5} className="flex">
-                <Link href="/?platform=Facebook#browse" className="bg-blue-50 w-full p-5 flex items-center justify-between relative overflow-hidden group cursor-pointer min-h-[140px] rounded-2xl shadow-sm border border-blue-100 transition-shadow hover:shadow-md block">
-                   <div className="relative z-10 w-2/3">
-                     <h3 className="text-gray-900 text-base font-bold mb-1">Facebook<br/>Pages & Groups</h3>
-                     <span className="text-[#1877F2] text-xs font-bold border-b-2 border-[#1877F2] pb-0.5 inline-block">BROWSE FB</span>
-                   </div>
-                   <div className="w-14 h-14 bg-white shadow-sm rounded-full flex items-center justify-center transition-transform group-hover:scale-110">
-                     <svg className="w-8 h-8 text-[#1877F2] fill-current" viewBox="0 0 24 24">
-                       <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                     </svg>
-                   </div>
-                </Link>
-              </ScrollAnimation>
-              <ScrollAnimation direction="right" delay={0.6} className="flex">
-                <Link href="/?platform=Discord#browse" className="bg-blue-50 w-full p-5 flex items-center justify-between relative overflow-hidden group cursor-pointer min-h-[140px] rounded-2xl shadow-sm border border-blue-100 transition-shadow hover:shadow-md block">
-                   <div className="relative z-10 w-2/3">
-                     <h3 className="text-gray-900 text-base font-bold mb-1">Active<br/>Discord Servers</h3>
-                     <span className="text-[#5865F2] text-xs font-bold border-b-2 border-[#5865F2] pb-0.5 inline-block">VIEW SERVERS</span>
-                   </div>
-                   <div className="w-14 h-14 bg-white shadow-sm rounded-full flex items-center justify-center transition-transform group-hover:scale-110">
-                     <MessageCircle className="w-8 h-8 text-[#5865F2]" />
-                   </div>
-                </Link>
-              </ScrollAnimation>
+            {/* Card 1 */}
+            <div className="bg-slate-50/80 hover:bg-white rounded-2xl p-6 border border-slate-200/80 hover:border-blue-300 transition-all duration-300 shadow-xs hover:shadow-lg group">
+              <div className="w-12 h-12 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center mb-5 group-hover:scale-110 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                <ShieldCheck className="w-6 h-6" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 mb-2">Vault Escrow on Every Order</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Buyer payment is held in our insured escrow account from the moment they pay. Funds are never released until the buyer verifies channel ownership.
+              </p>
             </div>
+
+            {/* Card 2 */}
+            <div className="bg-slate-50/80 hover:bg-white rounded-2xl p-6 border border-slate-200/80 hover:border-emerald-300 transition-all duration-300 shadow-xs hover:shadow-lg group">
+              <div className="w-12 h-12 rounded-xl bg-emerald-600/10 text-emerald-600 flex items-center justify-center mb-5 group-hover:scale-110 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 mb-2">Rigorous Channel Audit</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                We inspect monetization status, copyright strikes, genuine organic subscriber engagement, and primary email ownership before approving listings.
+              </p>
+            </div>
+
+            {/* Card 3 */}
+            <div className="bg-slate-50/80 hover:bg-white rounded-2xl p-6 border border-slate-200/80 hover:border-indigo-300 transition-all duration-300 shadow-xs hover:shadow-lg group">
+              <div className="w-12 h-12 rounded-xl bg-indigo-600/10 text-indigo-600 flex items-center justify-center mb-5 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+                <Lock className="w-6 h-6" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 mb-2">Supervised 2FA Handover</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Our escrow agents supervise removing recovery emails, clearing 2FA tokens, and binding the buyer&apos;s phone numbers, ensuring zero account pullbacks.
+              </p>
+            </div>
+
+            {/* Card 4 */}
+            <div className="bg-slate-50/80 hover:bg-white rounded-2xl p-6 border border-slate-200/80 hover:border-amber-300 transition-all duration-300 shadow-xs hover:shadow-lg group">
+              <div className="w-12 h-12 rounded-xl bg-amber-600/10 text-amber-600 flex items-center justify-center mb-5 group-hover:scale-110 group-hover:bg-amber-600 group-hover:text-white transition-all duration-300">
+                <Zap className="w-6 h-6" />
+              </div>
+              <h3 className="text-base font-bold text-slate-900 mb-2">Instant Global Payouts</h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Once the buyer confirms handover, funds are disbursed directly to the seller via domestic bank wire, ACH, or cryptocurrency with zero chargeback risk.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 3. The 4-Step Escrow Blueprint */}
+      <section className="py-16 sm:py-20 bg-slate-950 text-white relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.12),transparent_50%)] pointer-events-none"></div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/70 px-3 py-1 rounded-full border border-emerald-500/30">
+              End-to-End Escrow Blueprint
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-black text-white tracking-tight mt-3">
+              How Dealoura Protects Both Parties
+            </h2>
+            <p className="text-slate-400 text-sm sm:text-base mt-2">
+              From payment locking to final ownership handover, every step is safeguarded.
+            </p>
           </div>
 
-        </div>
-      </div>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+            
+            {/* Step 1 */}
+            <div className="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 relative">
+              <span className="text-xs font-mono font-black text-blue-400 bg-blue-950/80 px-2.5 py-1 rounded-md border border-blue-500/30">
+                STEP 01
+              </span>
+              <h3 className="text-base font-bold text-white mt-4 mb-2">Buyer Deposits Into Vault</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                The buyer initiates the order. Funds are placed into Dealoura&apos;s escrow vault. The seller is notified that funds are 100% verified.
+              </p>
+            </div>
 
-      {/* 4. Explore Accounts Section with Live Filters */}
-      <ScrollAnimation direction="up" delay={0.1}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            {/* Step 2 */}
+            <div className="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 relative">
+              <span className="text-xs font-mono font-black text-indigo-400 bg-indigo-950/80 px-2.5 py-1 rounded-md border border-indigo-500/30">
+                STEP 02
+              </span>
+              <h3 className="text-base font-bold text-white mt-4 mb-2">Dealoura Agent Audit</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Seller provides credentials into the secure vault. Dealoura agents verify ownership, monetization standing, and strike-free history.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 relative">
+              <span className="text-xs font-mono font-black text-emerald-400 bg-emerald-950/80 px-2.5 py-1 rounded-md border border-emerald-500/30">
+                STEP 03
+              </span>
+              <h3 className="text-base font-bold text-white mt-4 mb-2">Secure Credential Handover</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Credentials are transferred to the buyer. The buyer inspects analytics, binds their 2FA, and has a 7-day evaluation window.
+              </p>
+            </div>
+
+            {/* Step 4 */}
+            <div className="bg-slate-900/90 rounded-2xl p-6 border border-slate-800 relative">
+              <span className="text-xs font-mono font-black text-amber-400 bg-amber-950/80 px-2.5 py-1 rounded-md border border-amber-500/30">
+                STEP 04
+              </span>
+              <h3 className="text-base font-bold text-white mt-4 mb-2">Instant Payout Release</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Buyer confirms satisfaction or evaluation time concludes. Escrow funds disburse automatically to the seller&apos;s account.
+              </p>
+            </div>
+
+          </div>
+
+          <div className="mt-12 text-center">
+            <Link
+              href="/sell#how-it-works"
+              className="inline-flex items-center gap-2 text-xs font-bold font-mono text-emerald-400 hover:text-emerald-300 transition"
+            >
+              <span>Read the Full Escrow Security Protocol</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Category Bento Showcase */}
+      <section className="py-14 bg-slate-100/70 border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8">
+            <div>
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
+                Featured Categories
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1">
+                Explore Verified Channels by Platform
+              </h2>
+            </div>
+            <Link
+              href="/#browse"
+              className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 mt-2 md:mt-0"
+            >
+              <span>View All Listings</span>
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+            
+            {/* YouTube */}
+            <Link 
+              href="/?platform=YouTube#browse" 
+              className="bg-white rounded-2xl p-4 border border-slate-200/80 hover:border-red-400 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col items-center text-center group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-red-50 text-red-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <Video className="w-6 h-6" />
+              </div>
+              <h3 className="text-sm font-bold text-slate-900">YouTube</h3>
+              <p className="text-[11px] text-slate-400 mt-0.5">Monetized &amp; Shorts</p>
+            </Link>
+
+            {/* TikTok */}
+            <Link 
+              href="/?platform=TikTok#browse" 
+              className="bg-white rounded-2xl p-4 border border-slate-200/80 hover:border-slate-900 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col items-center text-center group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-slate-100 text-slate-900 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <Smartphone className="w-6 h-6" />
+              </div>
+              <h3 className="text-sm font-bold text-slate-900">TikTok</h3>
+              <p className="text-[11px] text-slate-400 mt-0.5">Creator Rewards</p>
+            </Link>
+
+            {/* Instagram */}
+            <Link 
+              href="/?platform=Instagram#browse" 
+              className="bg-white rounded-2xl p-4 border border-slate-200/80 hover:border-pink-400 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col items-center text-center group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <Camera className="w-6 h-6" />
+              </div>
+              <h3 className="text-sm font-bold text-slate-900">Instagram</h3>
+              <p className="text-[11px] text-slate-400 mt-0.5">Theme &amp; Niche Brands</p>
+            </Link>
+
+            {/* Twitter / X */}
+            <Link 
+              href="/?platform=Twitter+%2F+X#browse" 
+              className="bg-white rounded-2xl p-4 border border-slate-200/80 hover:border-slate-900 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col items-center text-center group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-slate-100 text-slate-900 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform font-black text-xl">
+                𝕏
+              </div>
+              <h3 className="text-sm font-bold text-slate-900">Twitter / X</h3>
+              <p className="text-[11px] text-slate-400 mt-0.5">Verified &amp; Aged Handles</p>
+            </Link>
+
+            {/* Facebook */}
+            <Link 
+              href="/?platform=Facebook#browse" 
+              className="bg-white rounded-2xl p-4 border border-slate-200/80 hover:border-blue-400 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col items-center text-center group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform font-black text-lg">
+                FB
+              </div>
+              <h3 className="text-sm font-bold text-slate-900">Facebook</h3>
+              <p className="text-[11px] text-slate-400 mt-0.5">High-Reach Pages</p>
+            </Link>
+
+            {/* Discord */}
+            <Link 
+              href="/?platform=Discord#browse" 
+              className="bg-white rounded-2xl p-4 border border-slate-200/80 hover:border-indigo-400 shadow-xs hover:shadow-md transition-all duration-200 flex flex-col items-center text-center group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                <MessageCircle className="w-6 h-6" />
+              </div>
+              <h3 className="text-sm font-bold text-slate-900">Discord</h3>
+              <p className="text-[11px] text-slate-400 mt-0.5">Gaming &amp; Web3 Servers</p>
+            </Link>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Live Marketplace Explorer Feed */}
+      <section className="py-16 sm:py-20 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
             <div>
-              <h2 className="text-2xl font-black text-gray-900">Explore Accounts</h2>
-              <p className="text-xs text-gray-500 mt-1">Verified social media channels protected by Dealoura Escrow</p>
+              <div className="flex items-center gap-2">
+                <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">Live Escrow Feed</span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-1">
+                Verified Available Channels
+              </h2>
             </div>
-            <div className="text-xs font-semibold text-gray-400 mt-2 md:mt-0">
-              {listings?.length || 0} {listings?.length === 1 ? 'account' : 'accounts'} found
+            <div className="text-xs font-mono font-bold text-slate-500 mt-2 md:mt-0 bg-white px-3 py-1.5 rounded-lg border border-slate-200 shadow-xs">
+              {listings?.length || 0} listings ready for instant escrow
             </div>
           </div>
 
           {/* Interactive Search & Filter Bar */}
           <MarketplaceFilterBar />
 
-          {/* Database Products Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+          {/* Listing Cards Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
             {listings && listings.length > 0 ? (
               listings.map((listing: any, index: number) => {
                 const isSold = listing.status === 'sold';
@@ -229,100 +364,108 @@ export default async function Home(props: {
                   ? `${Number(listing.followers_count).toLocaleString()} followers`
                   : null;
 
-                const platformBg = listing.platform === 'Facebook'
-                  ? 'bg-[#1877F2]'
+                const platformBadgeStyle = listing.platform === 'Facebook'
+                  ? 'bg-blue-600 text-white'
                   : listing.platform === 'YouTube'
-                  ? 'bg-red-600'
+                  ? 'bg-red-600 text-white'
                   : listing.platform === 'TikTok'
-                  ? 'bg-black'
+                  ? 'bg-black text-white'
                   : listing.platform === 'Instagram'
-                  ? 'bg-pink-600'
+                  ? 'bg-gradient-to-tr from-yellow-500 via-pink-600 to-purple-600 text-white'
                   : listing.platform === 'Discord'
-                  ? 'bg-[#5865F2]'
-                  : 'bg-blue-600';
+                  ? 'bg-[#5865F2] text-white'
+                  : 'bg-blue-600 text-white';
 
                 return (
-                  <ScrollAnimation key={listing.id} direction="up" delay={0.05 * (index % 5)}>
+                  <ScrollAnimation key={listing.id} direction="up" delay={0.03 * (index % 5)}>
                     <Link href={`/marketplace/listings/${listing.id}`} className="group block h-full">
-                      <div className={`bg-white p-3.5 transition-all duration-200 rounded-2xl border flex flex-col h-full ${
+                      <div className={`bg-white rounded-2xl border transition-all duration-300 flex flex-col h-full overflow-hidden relative ${
                         isSold
-                          ? 'opacity-60 hover:opacity-85 border-gray-200 shadow-none'
-                          : 'hover:shadow-xl border-gray-100 hover:border-blue-200'
+                          ? 'opacity-65 hover:opacity-85 border-slate-200 shadow-none'
+                          : 'hover:shadow-xl border-slate-200/90 hover:border-blue-400 hover:-translate-y-1'
                       }`}>
                         
-                        {/* Image Preview or Platform Card */}
-                        <div className="w-full aspect-square bg-slate-100 rounded-xl mb-3 flex items-center justify-center relative overflow-hidden">
+                        {/* Image Preview Container */}
+                        <div className="w-full aspect-[4/3] bg-slate-100 relative overflow-hidden flex items-center justify-center">
                           {mainImage ? (
                             <img
                               src={mainImage}
                               alt={listing.title}
-                              className={`w-full h-full object-cover transition-transform duration-300 ${
+                              className={`w-full h-full object-cover transition-transform duration-500 ${
                                 isSold ? 'grayscale-[20%]' : 'group-hover:scale-105'
                               }`}
                             />
                           ) : (
-                            <div className="flex flex-col items-center justify-center text-center p-2">
-                              <span className="text-blue-600 font-extrabold text-base">{listing.platform || 'Account'}</span>
-                              <span className="text-[11px] text-gray-400 mt-0.5">Verified Asset</span>
+                            <div className="flex flex-col items-center justify-center text-center p-4">
+                              <span className="text-slate-900 font-black text-base">{listing.platform || 'Account'}</span>
+                              <span className="text-[10px] font-mono text-slate-400 mt-1">Verified Escrow Asset</span>
                             </div>
                           )}
 
-                          {/* Sold Central Stamp Overlay */}
-                          {isSold && (
-                            <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[1px] flex items-center justify-center z-10">
-                              <span className="bg-rose-600 text-white font-black text-xs uppercase px-3.5 py-1 rounded-full shadow-lg tracking-wider border border-white/20">
+                          {/* Top Badges */}
+                          <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-20 pointer-events-none">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm ${platformBadgeStyle}`}>
+                              {listing.platform || 'Account'}
+                            </span>
+
+                            {isSold ? (
+                              <span className="bg-rose-600 text-white text-[9px] font-mono font-black px-2 py-0.5 rounded shadow-sm uppercase tracking-wider">
                                 SOLD
+                              </span>
+                            ) : listing.monetized ? (
+                              <span className="bg-emerald-600 text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm uppercase tracking-wider flex items-center gap-1">
+                                <Sparkles className="w-2.5 h-2.5" />
+                                <span>Monetized</span>
+                              </span>
+                            ) : null}
+                          </div>
+
+                          {/* Sold Central Watermark Overlay */}
+                          {isSold && (
+                            <div className="absolute inset-0 bg-slate-950/50 backdrop-blur-[1px] flex items-center justify-center z-10">
+                              <span className="bg-rose-600 text-white font-black text-xs uppercase px-4 py-1.5 rounded-full shadow-xl tracking-widest border border-white/20">
+                                COMPLETED / SOLD
                               </span>
                             </div>
                           )}
-
-                          {/* Platform Pill */}
-                          <span className={`absolute top-2 left-2 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-sm z-20 ${platformBg}`}>
-                            {listing.platform || 'Account'}
-                          </span>
-
-                          {/* Sold or Monetized Indicator */}
-                          {isSold ? (
-                            <span className="absolute top-2 right-2 bg-rose-600 text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-sm uppercase tracking-wider z-20">
-                              SOLD
-                            </span>
-                          ) : listing.monetized ? (
-                            <span className="absolute top-2 right-2 bg-green-500 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded shadow-sm uppercase tracking-wider z-20">
-                              Monetized
-                            </span>
-                          ) : null}
                         </div>
-                        
-                        {/* Metrics Meta */}
-                        <div className="flex items-center justify-between text-[11px] text-gray-500 mb-1 font-medium">
-                          <span>{followersText || listing.niche || 'Account'}</span>
-                          {listing.user_profiles?.username && (
-                            <span className="text-gray-400 truncate max-w-[80px]">@{listing.user_profiles.username}</span>
-                          )}
-                        </div>
-                        
-                        {/* Title */}
-                        <h3 className={`text-xs font-bold line-clamp-2 h-8 mb-2 transition ${
-                          isSold ? 'text-gray-500' : 'text-gray-900 group-hover:text-blue-600'
-                        }`}>
-                          {listing.title}
-                        </h3>
-                        
-                        {/* Price */}
-                        <div className="mt-auto pt-2 border-t border-gray-50 flex items-center justify-between">
-                          <div className="flex items-center gap-1.5">
-                            <p className={`text-base font-extrabold ${isSold ? 'text-gray-400 line-through' : 'text-blue-600'}`}>
-                              ${listing.price}
-                            </p>
-                            {isSold && (
-                              <span className="text-[9px] font-black text-rose-600 uppercase bg-rose-50 px-1 py-0.5 rounded border border-rose-200">
-                                SOLD
+
+                        {/* Card Body */}
+                        <div className="p-4 flex flex-col flex-grow">
+                          
+                          {/* Audience & Seller Handle */}
+                          <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium mb-1.5">
+                            <span className="font-semibold text-slate-700">{followersText || listing.niche || 'Audience'}</span>
+                            {listing.user_profiles?.username && (
+                              <span className="text-slate-400 truncate max-w-[90px] font-mono">
+                                @{listing.user_profiles.username}
                               </span>
                             )}
                           </div>
-                          <span className={`text-[10px] font-bold uppercase ${isSold ? 'text-rose-600' : 'text-gray-400'}`}>
-                            {isSold ? 'SOLD' : 'Escrow Safe'}
-                          </span>
+
+                          {/* Listing Title */}
+                          <h3 className={`text-xs font-bold line-clamp-2 h-9 mb-3 transition leading-snug ${
+                            isSold ? 'text-slate-500' : 'text-slate-900 group-hover:text-blue-600'
+                          }`}>
+                            {listing.title}
+                          </h3>
+
+                          {/* Footer with Price & Escrow Tag */}
+                          <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between">
+                            <div className="flex items-baseline gap-1.5">
+                              <span className={`text-base font-black ${isSold ? 'text-slate-400 line-through' : 'text-slate-900'}`}>
+                                ${listing.price}
+                              </span>
+                            </div>
+                            <span className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+                              isSold
+                                ? 'bg-rose-50 text-rose-600 border border-rose-200'
+                                : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            }`}>
+                              {isSold ? 'SOLD' : 'Escrow Protected'}
+                            </span>
+                          </div>
+
                         </div>
 
                       </div>
@@ -331,13 +474,64 @@ export default async function Home(props: {
                 );
               })
             ) : (
-              <div className="col-span-full py-12 text-center text-gray-400 text-sm">
-                No active listings found. Be the first to list an account!
+              <div className="col-span-full py-16 text-center bg-white rounded-2xl border border-slate-200 p-8">
+                <ShieldCheck className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <h3 className="text-sm font-bold text-slate-700">No active accounts match your search</h3>
+                <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+                  Try adjusting your filters or search terms, or be the first to list a channel for sale.
+                </p>
+                <Link
+                  href="/sell"
+                  className="mt-4 inline-flex items-center gap-2 bg-blue-600 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xs hover:bg-blue-700 transition"
+                >
+                  List Your Channel
+                </Link>
               </div>
             )}
           </div>
+
         </div>
-      </ScrollAnimation>
+      </section>
+
+      {/* 6. High-Trust Guarantee Banner */}
+      <section className="py-16 bg-white border-t border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="rounded-3xl bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-950 p-8 sm:p-12 text-white relative overflow-hidden shadow-2xl">
+            <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none transform translate-x-10 translate-y-10">
+              <ShieldCheck className="w-96 h-96 text-white" />
+            </div>
+
+            <div className="relative z-10 max-w-2xl">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-500/30">
+                100% Zero-Loss Escrow Policy
+              </span>
+              <h2 className="text-2xl sm:text-4xl font-black tracking-tight mt-4 mb-4">
+                Ready to acquire a channel or sell your digital property?
+              </h2>
+              <p className="text-sm sm:text-base text-slate-300 leading-relaxed mb-8">
+                Every deal on Dealoura is supervised by our dedicated escrow specialists. No stolen passwords, no fake follower bots, and zero chargeback risks.
+              </p>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+                <Link
+                  href="/sell"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-500/30 transition-all"
+                >
+                  <span>List Your Account Free</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/#browse"
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-sm border border-white/20 transition-all backdrop-blur-md"
+                >
+                  <span>Explore Marketplace</span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
     </div>
   )
 }
