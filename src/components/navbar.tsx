@@ -70,6 +70,10 @@ export default function Navbar() {
               <span className="text-white font-semibold">$4.2M+</span> Escrowed
             </span>
             <span className="hidden md:inline text-slate-700">|</span>
+            <Link href="/referral" className="hidden lg:inline text-emerald-400 hover:text-emerald-300 font-bold transition">
+              Earn 20% Referral
+            </Link>
+            <span className="hidden lg:inline text-slate-700">|</span>
             <Link href="/sell#escrow-guide" className="hover:text-emerald-400 transition flex items-center gap-1 font-medium">
               <span>How Escrow Works</span>
             </Link>
@@ -262,6 +266,13 @@ export default function Navbar() {
               className="block px-3 py-2 rounded-lg text-sm font-bold text-blue-600 hover:bg-blue-50"
             >
               SELL ACCOUNT
+            </Link>
+            <Link 
+              href="/referral" 
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-lg text-sm font-bold text-emerald-600 hover:bg-emerald-50"
+            >
+              ★ AFFILIATE PROGRAM (EARN 20%)
             </Link>
             <Link 
               href="/sell#how-it-works" 

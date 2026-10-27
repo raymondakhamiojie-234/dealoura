@@ -75,6 +75,11 @@ export default function Footer() {
                   <span>Discord Servers</span>
                 </Link>
               </li>
+              <li>
+                <Link href="/referral" className="text-emerald-400 hover:text-emerald-300 font-bold transition flex items-center gap-1.5 mt-2 pt-2 border-t border-slate-800/80">
+                  <span>★ Affiliate Program (Earn 20%)</span>
+                </Link>
+              </li>
             </ul>
           </div>
 
