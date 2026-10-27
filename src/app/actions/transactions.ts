@@ -458,8 +458,47 @@ export async function updateTransactionState(transactionId: string, newState: st
     }
   }
 
-  // If completed, email seller & buyer
+  // If completed, email seller & buyer and release funds to seller wallet
   if (newState === 'completed') {
+    // 1. Credit seller's internal wallet
+    try {
+      const { data: rpcRes, error: rpcErr } = await supabase.rpc('wallet_release_escrow', {
+        p_transaction_id: transactionId
+      })
+      if (rpcErr) {
+        const escrowFee = tx.escrow_fee || Math.round(tx.agreed_price * 0.05 * 100) / 100
+        const sellerPayout = Math.max(0, tx.agreed_price - escrowFee)
+        const { data: sWallet } = await supabase
+          .from('user_wallets')
+          .select('available_balance')
+          .eq('user_id', tx.seller_id)
+          .maybeSingle()
+
+        if (sWallet) {
+          await supabase
+            .from('user_wallets')
+            .update({
+              available_balance: Number(sWallet.available_balance || 0) + sellerPayout,
+              updated_at: new Date().toISOString()
+            })
+            .eq('user_id', tx.seller_id)
+
+          await supabase.from('wallet_transactions').insert({
+            user_id: tx.seller_id,
+            type: 'escrow_release',
+            amount: sellerPayout,
+            fee: escrowFee,
+            status: 'completed',
+            reference_id: transactionId,
+            payment_method: 'internal_balance',
+            description: `Escrow earnings released for "${listingTitle}" (#${transactionId.slice(0, 8)})`
+          })
+        }
+      }
+    } catch (wErr) {
+      console.warn('Wallet escrow release error:', wErr)
+    }
+
     try {
       // Seller payout email
       const sellerEmailHtml = renderEscrowCompletedEmail({

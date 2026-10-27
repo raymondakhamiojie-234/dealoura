@@ -18,7 +18,8 @@ import {
   PlusCircle, 
   Sparkles,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
+  Wallet
 } from 'lucide-react'
 
 export default function Navbar() {
@@ -131,6 +132,17 @@ export default function Navbar() {
               >
                 MY ESCROWS
               </Link>
+              {user && (
+                <Link 
+                  href="/dashboard/wallet" 
+                  className={`text-xs font-bold px-3 py-2 rounded-lg transition-colors flex items-center gap-1.5 ${
+                    pathname === '/dashboard/wallet' ? 'text-blue-600 bg-blue-50/80' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/60'
+                  }`}
+                >
+                  <Wallet className="w-3.5 h-3.5 text-blue-600" />
+                  <span>WALLET</span>
+                </Link>
+              )}
             </div>
 
             {/* Right Action Controls */}
@@ -147,6 +159,13 @@ export default function Navbar() {
 
               {user ? (
                 <div className="flex items-center space-x-2">
+                  <Link 
+                    href="/dashboard/wallet" 
+                    className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition" 
+                    title="Wallet & Balance"
+                  >
+                    <Wallet className="h-4.5 w-4.5 text-blue-600" />
+                  </Link>
                   <Link 
                     href="/dashboard/notifications" 
                     className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition relative" 
@@ -255,6 +274,13 @@ export default function Navbar() {
             {user ? (
               <div className="pt-3 border-t border-slate-100 space-y-2">
                 <p className="px-3 text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400">Account Dashboard</p>
+                <Link 
+                  href="/dashboard/wallet" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  <Wallet className="w-4 h-4 mr-2 text-blue-600" /> Wallet &amp; Balance
+                </Link>
                 <Link 
                   href="/dashboard/transactions" 
                   onClick={() => setIsMobileMenuOpen(false)}
