@@ -83,7 +83,14 @@ export default async function Home(props: {
     query = query.order('created_at', { ascending: false })
   }
 
-  const { data: listings } = await query.limit(30)
+  let listings: any[] = []
+  try {
+    const { data } = await query.limit(30)
+    listings = data || []
+  } catch (err) {
+    console.warn('Listing query fetch warning (DB may be paused or offline):', err)
+    listings = []
+  }
 
   return (
     <div className="bg-slate-50 min-h-screen text-slate-900 overflow-hidden font-sans">

@@ -27,8 +27,13 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // refreshing the auth token
-  await supabase.auth.getUser()
+  // refreshing the auth token safely without blocking requests if network/auth fails
+  try {
+    await supabase.auth.getUser()
+  } catch (error) {
+    // If Supabase is paused or unreachable, don't crash middleware with a 25s timeout
+    console.warn('Supabase auth session refresh warning:', error)
+  }
 
   return supabaseResponse
 }
