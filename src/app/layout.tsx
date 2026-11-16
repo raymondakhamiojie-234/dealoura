@@ -8,14 +8,14 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | Dealoura Marketplace',
-    default: 'Dealoura - Peer-to-Peer Marketplace',
+    template: '%s | Dealoura Digital Asset Marketplace',
+    default: 'Dealoura - Peer-to-Peer Digital Asset Marketplace',
   },
-  description: 'Buy and sell items securely on Dealoura. A modern peer-to-peer marketplace with secure payments, buyer protection, and verified sellers.',
-  keywords: ['marketplace', 'peer-to-peer', 'buy', 'sell', 'ecommerce'],
+  description: 'Buy and sell digital assets with confidence. A secure peer-to-peer marketplace for YouTube channels, TikTok accounts, Instagram brands, and digital communities protected by transparent escrow.',
+  keywords: ['digital assets', 'youtube channels for sale', 'buy tiktok account', 'instagram accounts', 'escrow marketplace', 'dealoura'],
   openGraph: {
-    title: 'Dealoura Marketplace',
-    description: 'Buy and sell items securely on Dealoura.',
+    title: 'Dealoura - Peer-to-Peer Digital Asset Marketplace',
+    description: 'Buy and sell digital assets with confidence through verified escrow.',
     type: 'website',
   }
 }
@@ -27,7 +27,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} min-h-screen bg-[#F8FAFC] flex flex-col`}>
+      <body className={`${inter.className} min-h-screen bg-[#F7F9FC] text-[#101828] flex flex-col antialiased`}>
         <Navbar />
         <main className="flex-grow">
           {children}
