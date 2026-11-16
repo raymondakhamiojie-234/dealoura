@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Sparkles, ShieldCheck, CheckCircle2 } from 'lucide-react'
+import { Sparkles, ShieldCheck } from 'lucide-react'
 
 export interface ListingItem {
   id: string
@@ -36,14 +36,14 @@ export function ListingCard({ listing }: ListingCardProps) {
     : listing.platform === 'YouTube'
     ? 'bg-[#FF0000] text-white'
     : listing.platform === 'TikTok'
-    ? 'bg-black text-white'
+    ? 'bg-[#010b13] text-[#ebf1f5]'
     : listing.platform === 'Instagram'
     ? 'bg-gradient-to-tr from-amber-500 via-pink-600 to-purple-600 text-white'
     : listing.platform === 'Discord'
     ? 'bg-[#5865F2] text-white'
     : listing.platform === 'Twitter / X'
-    ? 'bg-slate-900 text-white'
-    : 'bg-[#101828] text-white'
+    ? 'bg-[#010b13] text-[#ebf1f5]'
+    : 'bg-[#010b13] text-[#ebf1f5]'
 
   return (
     <Link 
@@ -53,13 +53,13 @@ export function ListingCard({ listing }: ListingCardProps) {
       <div 
         className={`bg-white rounded-2xl border transition-all duration-300 flex flex-col h-full overflow-hidden relative ${
           isSold
-            ? 'opacity-65 hover:opacity-85 border-[#E4E7EC] shadow-none'
-            : 'hover:shadow-lg border-[#E4E7EC] hover:border-[#16A36A] hover:-translate-y-1'
+            ? 'opacity-65 hover:opacity-85 border-[#d2dde4] shadow-none'
+            : 'hover:shadow-xl border-[#d2dde4] hover:border-[#010b13] hover:-translate-y-1'
         }`}
       >
         
         {/* Image Preview Container (Consistent 4:3 Aspect Ratio) */}
-        <div className="w-full aspect-[4/3] bg-[#F7F9FC] relative overflow-hidden flex items-center justify-center border-b border-[#E4E7EC]">
+        <div className="w-full aspect-[4/3] bg-[#ebf1f5] relative overflow-hidden flex items-center justify-center border-b border-[#d2dde4]">
           {mainImage ? (
             <img
               src={mainImage}
@@ -70,8 +70,8 @@ export function ListingCard({ listing }: ListingCardProps) {
             />
           ) : (
             <div className="flex flex-col items-center justify-center text-center p-4">
-              <span className="text-[#101828] font-black text-base">{listing.platform || 'Digital Asset'}</span>
-              <span className="text-[11px] font-mono text-[#667085] mt-1">Verified Escrow Listing</span>
+              <span className="text-[#010b13] font-black text-base">{listing.platform || 'Digital Asset'}</span>
+              <span className="text-[11px] font-mono text-[#526371] mt-1">Verified Escrow Listing</span>
             </div>
           )}
 
@@ -86,7 +86,7 @@ export function ListingCard({ listing }: ListingCardProps) {
                 SOLD
               </span>
             ) : listing.monetized ? (
-              <span className="bg-[#16A36A] text-white text-[9px] font-bold px-2 py-0.5 rounded shadow-sm uppercase tracking-wider flex items-center gap-1">
+              <span className="bg-[#010b13] text-[#ebf1f5] text-[9px] font-bold px-2 py-0.5 rounded shadow-sm uppercase tracking-wider flex items-center gap-1 border border-[#ebf1f5]/30">
                 <Sparkles className="w-2.5 h-2.5" />
                 <span>Monetized</span>
               </span>
@@ -95,7 +95,7 @@ export function ListingCard({ listing }: ListingCardProps) {
 
           {/* Sold Central Watermark Overlay */}
           {isSold && (
-            <div className="absolute inset-0 bg-[#101828]/50 backdrop-blur-[1px] flex items-center justify-center z-10">
+            <div className="absolute inset-0 bg-[#010b13]/60 backdrop-blur-[1px] flex items-center justify-center z-10">
               <span className="bg-rose-600 text-white font-black text-xs uppercase px-4 py-1.5 rounded-full shadow-xl tracking-widest border border-white/20">
                 COMPLETED / SOLD
               </span>
@@ -107,10 +107,10 @@ export function ListingCard({ listing }: ListingCardProps) {
         <div className="p-4 flex flex-col flex-grow">
           
           {/* Audience Metric & Seller Handle */}
-          <div className="flex items-center justify-between text-[11px] text-[#667085] font-medium mb-1.5">
-            <span className="font-semibold text-[#18263B]">{followersText || listing.niche || 'Audience'}</span>
+          <div className="flex items-center justify-between text-[11px] text-[#526371] font-medium mb-1.5">
+            <span className="font-semibold text-[#010b13]">{followersText || listing.niche || 'Audience'}</span>
             {listing.user_profiles?.username && (
-              <span className="text-[#667085] truncate max-w-[100px] font-mono">
+              <span className="text-[#526371] truncate max-w-[100px] font-mono">
                 @{listing.user_profiles.username}
               </span>
             )}
@@ -118,22 +118,22 @@ export function ListingCard({ listing }: ListingCardProps) {
 
           {/* Listing Title */}
           <h3 className={`text-xs font-bold line-clamp-2 h-9 mb-3 transition leading-snug ${
-            isSold ? 'text-[#667085]' : 'text-[#101828] group-hover:text-[#16A36A]'
+            isSold ? 'text-[#526371]' : 'text-[#010b13] group-hover:underline'
           }`}>
             {listing.title}
           </h3>
 
           {/* Price & Escrow Tag */}
-          <div className="mt-auto pt-3 border-t border-[#E4E7EC] flex items-center justify-between">
+          <div className="mt-auto pt-3 border-t border-[#d2dde4] flex items-center justify-between">
             <div className="flex items-baseline gap-1.5">
-              <span className={`text-base font-black ${isSold ? 'text-slate-400 line-through' : 'text-[#101828]'}`}>
+              <span className={`text-base font-black ${isSold ? 'text-slate-400 line-through' : 'text-[#010b13]'}`}>
                 ${Number(listing.price).toLocaleString()}
               </span>
             </div>
             <span className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
               isSold
                 ? 'bg-rose-50 text-rose-600 border border-rose-200'
-                : 'bg-emerald-50 text-[#16A36A] border border-emerald-200'
+                : 'bg-[#ebf1f5] text-[#010b13] border border-[#d2dde4]'
             }`}>
               {isSold ? 'SOLD' : 'Escrow Protected'}
             </span>

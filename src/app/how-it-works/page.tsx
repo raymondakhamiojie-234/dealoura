@@ -1,20 +1,9 @@
 import Link from 'next/link'
 import {
   ShieldCheck,
-  Lock,
   CheckCircle2,
-  ArrowRight,
-  Sparkles,
-  Users,
-  DollarSign,
-  AlertCircle,
-  HelpCircle,
-  Clock,
-  Shield,
-  Layers,
-  ChevronRight,
-  Eye,
-  KeyRound
+  Lock,
+  ArrowRight
 } from 'lucide-react'
 
 export const metadata = {
@@ -24,13 +13,13 @@ export const metadata = {
 
 export default function HowItWorksPage() {
   return (
-    <div className="bg-[#F7F9FC] min-h-screen text-[#101828] font-sans">
+    <div className="bg-[#ebf1f5] min-h-screen text-[#010b13] font-sans">
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-[#101828] text-white pt-14 pb-20 border-b border-[#18263B]">
+      <section className="relative overflow-hidden bg-[#010b13] text-[#ebf1f5] pt-14 pb-20 border-b border-[#0a1722]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#18263B] border border-emerald-500/30 text-emerald-400 text-xs font-semibold">
-            <ShieldCheck className="w-4 h-4" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0a1722] border border-[#d2dde4]/30 text-[#ebf1f5] text-xs font-semibold">
+            <ShieldCheck className="w-4 h-4 text-[#ebf1f5]" />
             <span>Institutional Escrow Architecture</span>
           </div>
 
@@ -38,20 +27,20 @@ export default function HowItWorksPage() {
             How Dealoura Escrow Protects Every Transaction
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg text-[#ebf1f5]/80 max-w-2xl mx-auto leading-relaxed">
             In digital asset trades, sending credentials or payment directly to a stranger is fraught with risk. Dealoura acts as an audited, neutral middleman ensuring funds and credentials are secure every step of the way.
           </p>
 
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/marketplace"
-              className="px-7 py-3.5 rounded-xl bg-[#16A36A] hover:bg-[#138a59] text-white font-bold text-sm shadow-lg shadow-emerald-900/30 transition"
+              className="px-7 py-3.5 rounded-xl bg-[#ebf1f5] hover:bg-white text-[#010b13] font-black text-sm shadow-xl transition"
             >
               Browse Marketplace
             </Link>
             <Link
               href="/sell"
-              className="px-7 py-3.5 rounded-xl bg-[#18263B] hover:bg-[#223552] text-slate-200 font-bold text-sm border border-slate-700 transition"
+              className="px-7 py-3.5 rounded-xl bg-[#0a1722] hover:bg-[#122434] text-[#ebf1f5] font-bold text-sm border border-[#d2dde4]/30 transition"
             >
               Start Selling
             </Link>
@@ -63,10 +52,10 @@ export default function HowItWorksPage() {
       <section className="py-16 sm:py-24 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         
         <div className="text-center space-y-2">
-          <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#16A36A]">
+          <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#010b13]">
             The Step-by-Step Journey
           </span>
-          <h2 className="text-3xl font-black text-[#101828]">
+          <h2 className="text-3xl font-black text-[#010b13]">
             From Initial Agreement to Final Ownership
           </h2>
         </div>
@@ -74,90 +63,90 @@ export default function HowItWorksPage() {
         <div className="space-y-8">
           
           {/* Step 1 */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E4E7EC] shadow-xs flex flex-col md:flex-row gap-6 items-start">
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 font-black text-xl flex items-center justify-center shrink-0 border border-blue-200">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#d2dde4] shadow-xs flex flex-col md:flex-row gap-6 items-start">
+            <div className="w-12 h-12 rounded-2xl bg-[#010b13] text-[#ebf1f5] font-black text-xl flex items-center justify-center shrink-0">
               01
             </div>
             <div className="space-y-2 flex-grow">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold uppercase px-2.5 py-0.5 rounded bg-blue-100 text-blue-800">
+                <span className="text-xs font-mono font-bold uppercase px-2.5 py-0.5 rounded bg-[#ebf1f5] text-[#010b13] border border-[#d2dde4]">
                   Discovery &amp; Agreement
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-[#101828]">Browse, Inspect &amp; Make an Offer</h3>
-              <p className="text-sm text-[#667085] leading-relaxed">
+              <h3 className="text-xl font-bold text-[#010b13]">Browse, Inspect &amp; Make an Offer</h3>
+              <p className="text-sm text-[#526371] leading-relaxed">
                 The buyer discovers an asset on Dealoura, reviews audited audience analytics, and submits an escrow offer. The seller can accept, counter, or decline. When accepted, a formal escrow transaction room is created.
               </p>
             </div>
           </div>
 
           {/* Step 2 */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E4E7EC] shadow-xs flex flex-col md:flex-row gap-6 items-start">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 font-black text-xl flex items-center justify-center shrink-0 border border-indigo-200">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#d2dde4] shadow-xs flex flex-col md:flex-row gap-6 items-start">
+            <div className="w-12 h-12 rounded-2xl bg-[#010b13] text-[#ebf1f5] font-black text-xl flex items-center justify-center shrink-0">
               02
             </div>
             <div className="space-y-2 flex-grow">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold uppercase px-2.5 py-0.5 rounded bg-indigo-100 text-indigo-800">
+                <span className="text-xs font-mono font-bold uppercase px-2.5 py-0.5 rounded bg-[#ebf1f5] text-[#010b13] border border-[#d2dde4]">
                   Payment Locking
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-[#101828]">Buyer Funds Segregated Escrow Vault</h3>
-              <p className="text-sm text-[#667085] leading-relaxed">
+              <h3 className="text-xl font-bold text-[#010b13]">Buyer Funds Segregated Escrow Vault</h3>
+              <p className="text-sm text-[#526371] leading-relaxed">
                 The buyer deposits the agreed transaction balance into Dealoura&apos;s escrow trust account. The seller is notified immediately with verified proof of deposit. The seller knows their payout is guaranteed before releasing any credentials.
               </p>
             </div>
           </div>
 
           {/* Step 3 */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E4E7EC] shadow-xs flex flex-col md:flex-row gap-6 items-start">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#16A36A] font-black text-xl flex items-center justify-center shrink-0 border border-emerald-200">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#d2dde4] shadow-xs flex flex-col md:flex-row gap-6 items-start">
+            <div className="w-12 h-12 rounded-2xl bg-[#010b13] text-[#ebf1f5] font-black text-xl flex items-center justify-center shrink-0">
               03
             </div>
             <div className="space-y-2 flex-grow">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold uppercase px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                <span className="text-xs font-mono font-bold uppercase px-2.5 py-0.5 rounded bg-[#ebf1f5] text-[#010b13] border border-[#d2dde4]">
                   Credential Audit
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-[#101828]">Dealoura Officer Verification</h3>
-              <p className="text-sm text-[#667085] leading-relaxed">
+              <h3 className="text-xl font-bold text-[#010b13]">Dealoura Officer Verification</h3>
+              <p className="text-sm text-[#526371] leading-relaxed">
                 The seller submits channel credentials to our encrypted vault. A trained Dealoura Escrow Officer audits the account to confirm subscriber counts, copyright strike status, primary ownership rights, and active monetization.
               </p>
             </div>
           </div>
 
           {/* Step 4 */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E4E7EC] shadow-xs flex flex-col md:flex-row gap-6 items-start">
-            <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 font-black text-xl flex items-center justify-center shrink-0 border border-amber-200">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#d2dde4] shadow-xs flex flex-col md:flex-row gap-6 items-start">
+            <div className="w-12 h-12 rounded-2xl bg-[#010b13] text-[#ebf1f5] font-black text-xl flex items-center justify-center shrink-0">
               04
             </div>
             <div className="space-y-2 flex-grow">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold uppercase px-2.5 py-0.5 rounded bg-amber-100 text-amber-800">
+                <span className="text-xs font-mono font-bold uppercase px-2.5 py-0.5 rounded bg-[#ebf1f5] text-[#010b13] border border-[#d2dde4]">
                   Supervised Handover
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-[#101828]">Secure Credential Transfer &amp; 7-Day Window</h3>
-              <p className="text-sm text-[#667085] leading-relaxed">
+              <h3 className="text-xl font-bold text-[#010b13]">Secure Credential Transfer &amp; 7-Day Window</h3>
+              <p className="text-sm text-[#526371] leading-relaxed">
                 Our agent supervises the transfer of primary ownership to the buyer, removes the seller&apos;s phone/recovery emails, and assists the buyer with binding fresh 2FA keys. The buyer enters an official 7-day evaluation window to verify traffic and compliance.
               </p>
             </div>
           </div>
 
           {/* Step 5 */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E4E7EC] shadow-xs flex flex-col md:flex-row gap-6 items-start">
-            <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-600 font-black text-xl flex items-center justify-center shrink-0 border border-teal-200">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#d2dde4] shadow-xs flex flex-col md:flex-row gap-6 items-start">
+            <div className="w-12 h-12 rounded-2xl bg-[#010b13] text-[#ebf1f5] font-black text-xl flex items-center justify-center shrink-0">
               05
             </div>
             <div className="space-y-2 flex-grow">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-mono font-bold uppercase px-2.5 py-0.5 rounded bg-teal-100 text-teal-800">
+                <span className="text-xs font-mono font-bold uppercase px-2.5 py-0.5 rounded bg-[#ebf1f5] text-[#010b13] border border-[#d2dde4]">
                   Instant Settlement
                 </span>
               </div>
-              <h3 className="text-xl font-bold text-[#101828]">Final Approval &amp; Irrevocable Payout</h3>
-              <p className="text-sm text-[#667085] leading-relaxed">
+              <h3 className="text-xl font-bold text-[#010b13]">Final Approval &amp; Irrevocable Payout</h3>
+              <p className="text-sm text-[#526371] leading-relaxed">
                 Once the buyer approves or the 7-day evaluation window completes with zero active disputes, escrow funds disburse automatically to the seller via domestic bank wire or ACH with 0% chargeback risk.
               </p>
             </div>
@@ -168,14 +157,14 @@ export default function HowItWorksPage() {
       </section>
 
       {/* Two Pillars: Buyer vs Seller Guarantees */}
-      <section className="py-16 sm:py-20 bg-white border-y border-[#E4E7EC]">
+      <section className="py-16 sm:py-20 bg-white border-y border-[#d2dde4]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           
           <div className="text-center space-y-2 max-w-xl mx-auto">
-            <h2 className="text-2xl sm:text-3xl font-black text-[#101828]">
+            <h2 className="text-2xl sm:text-3xl font-black text-[#010b13]">
               Protection for Both Sides of the Deal
             </h2>
-            <p className="text-xs sm:text-sm text-[#667085]">
+            <p className="text-xs sm:text-sm text-[#526371]">
               Neither buyer nor seller has to rely on trust—the process protects you mathematically.
             </p>
           </div>
@@ -183,46 +172,46 @@ export default function HowItWorksPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             
             {/* Buyer Guarantees */}
-            <div className="bg-[#F7F9FC] p-8 rounded-3xl border border-[#E4E7EC] space-y-4">
-              <div className="inline-flex items-center gap-2 text-xs font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
-                <ShieldCheck className="w-4 h-4" />
+            <div className="bg-[#ebf1f5] p-8 rounded-3xl border border-[#d2dde4] space-y-4">
+              <div className="inline-flex items-center gap-2 text-xs font-bold text-[#010b13] bg-white px-3 py-1 rounded-full border border-[#d2dde4]">
+                <ShieldCheck className="w-4 h-4 text-[#010b13]" />
                 <span>Buyer Guarantees</span>
               </div>
-              <h3 className="text-xl font-black text-[#101828]">You Never Pay for a Phantom Channel</h3>
-              <ul className="space-y-3 text-xs text-[#667085]">
+              <h3 className="text-xl font-black text-[#010b13]">You Never Pay for a Phantom Channel</h3>
+              <ul className="space-y-3 text-xs text-[#526371]">
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#16A36A] shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#010b13] shrink-0 mt-0.5" />
                   <span>Funds remain safely locked until you have received primary owner credentials.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#16A36A] shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#010b13] shrink-0 mt-0.5" />
                   <span>7 days to inspect analytics, live viewer retention, and strikes before funds release.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#16A36A] shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#010b13] shrink-0 mt-0.5" />
                   <span>100% full refund if the seller fails to deliver authentic access.</span>
                 </li>
               </ul>
             </div>
 
             {/* Seller Guarantees */}
-            <div className="bg-[#F7F9FC] p-8 rounded-3xl border border-[#E4E7EC] space-y-4">
-              <div className="inline-flex items-center gap-2 text-xs font-bold text-[#16A36A] bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                <ShieldCheck className="w-4 h-4" />
+            <div className="bg-[#ebf1f5] p-8 rounded-3xl border border-[#d2dde4] space-y-4">
+              <div className="inline-flex items-center gap-2 text-xs font-bold text-[#010b13] bg-white px-3 py-1 rounded-full border border-[#d2dde4]">
+                <ShieldCheck className="w-4 h-4 text-[#010b13]" />
                 <span>Seller Guarantees</span>
               </div>
-              <h3 className="text-xl font-black text-[#101828]">You Never Hand Over Without Verified Funds</h3>
-              <ul className="space-y-3 text-xs text-[#667085]">
+              <h3 className="text-xl font-black text-[#010b13]">You Never Hand Over Without Verified Funds</h3>
+              <ul className="space-y-3 text-xs text-[#526371]">
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#16A36A] shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#010b13] shrink-0 mt-0.5" />
                   <span>Buyer payment is 100% deposited and cleared before you give up access.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#16A36A] shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#010b13] shrink-0 mt-0.5" />
                   <span>Zero PayPal chargebacks, bank clawbacks, or fraudulent payment disputes.</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-[#16A36A] shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-4 h-4 text-[#010b13] shrink-0 mt-0.5" />
                   <span>Automatic escrow payout if the buyer fails to respond within 7 days.</span>
                 </li>
               </ul>
@@ -234,21 +223,21 @@ export default function HowItWorksPage() {
       </section>
 
       {/* Final Call to Action */}
-      <section className="py-16 sm:py-20 bg-[#F7F9FC]">
+      <section className="py-16 sm:py-20 bg-[#ebf1f5]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
-          <h2 className="text-3xl font-black text-[#101828]">
+          <h2 className="text-3xl font-black text-[#010b13]">
             Ready to Experience Risk-Free Digital Asset Trading?
           </h2>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link
               href="/marketplace"
-              className="w-full sm:w-auto px-8 py-3.5 bg-[#16A36A] hover:bg-[#138a59] text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-900/20 transition"
+              className="w-full sm:w-auto px-8 py-3.5 bg-[#010b13] hover:bg-[#0a1722] text-[#ebf1f5] font-black text-sm rounded-xl shadow-lg transition"
             >
               Browse Available Listings
             </Link>
             <Link
               href="/sell"
-              className="w-full sm:w-auto px-8 py-3.5 bg-[#101828] hover:bg-[#18263B] text-white font-bold text-sm rounded-xl transition"
+              className="w-full sm:w-auto px-8 py-3.5 bg-white hover:bg-[#d2dde4] text-[#010b13] font-bold text-sm rounded-xl border border-[#d2dde4] transition"
             >
               List an Account for Free
             </Link>

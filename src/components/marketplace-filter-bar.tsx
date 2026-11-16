@@ -17,12 +17,12 @@ import {
 
 const PLATFORMS = [
   { name: 'All', icon: LayoutGrid },
-  { name: 'YouTube', icon: Video, color: 'text-red-600', activeBg: 'bg-red-600 text-white' },
-  { name: 'TikTok', icon: Smartphone, color: 'text-slate-900', activeBg: 'bg-slate-900 text-white' },
-  { name: 'Instagram', icon: Camera, color: 'text-pink-600', activeBg: 'bg-pink-600 text-white' },
-  { name: 'Twitter / X', label: '𝕏', color: 'text-slate-900', activeBg: 'bg-slate-900 text-white' },
-  { name: 'Facebook', label: 'FB', color: 'text-blue-600', activeBg: 'bg-blue-600 text-white' },
-  { name: 'Discord', icon: MessageCircle, color: 'text-indigo-600', activeBg: 'bg-indigo-600 text-white' },
+  { name: 'YouTube', icon: Video, color: 'text-red-600' },
+  { name: 'TikTok', icon: Smartphone, color: 'text-[#010b13]' },
+  { name: 'Instagram', icon: Camera, color: 'text-pink-600' },
+  { name: 'Twitter / X', label: '𝕏', color: 'text-[#010b13]' },
+  { name: 'Facebook', label: 'FB', color: 'text-blue-600' },
+  { name: 'Discord', icon: MessageCircle, color: 'text-indigo-600' },
 ]
 
 const FOLLOWER_TIERS = [
@@ -115,18 +115,18 @@ export function MarketplaceFilterBar({ basePath = '/marketplace', targetId = 'br
   return (
     <div id={targetId} className="space-y-4 mb-8">
       {/* Search & Main Controls Card */}
-      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#E4E7EC] shadow-xs">
+      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#d2dde4] shadow-xs">
         <div className="flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
           
           {/* Search Input */}
           <form onSubmit={handleSearchSubmit} className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#667085]" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#526371]" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search by asset title, platform, niche, handle (e.g. Forex, Gaming, Tech)..."
-              className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-[#E4E7EC] bg-[#F7F9FC] text-[#101828] text-sm focus:bg-white focus:border-[#16A36A] focus:ring-2 focus:ring-[#16A36A]/20 outline-none transition placeholder:text-[#667085]"
+              className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-[#d2dde4] bg-[#ebf1f5] text-[#010b13] text-sm focus:bg-white focus:border-[#010b13] focus:ring-2 focus:ring-[#010b13]/10 outline-none transition placeholder:text-[#526371]"
             />
             {searchTerm && (
               <button
@@ -135,7 +135,7 @@ export function MarketplaceFilterBar({ basePath = '/marketplace', targetId = 'br
                   setSearchTerm('')
                   updateFilters({ q: null })
                 }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#667085] hover:text-[#101828] p-0.5"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#526371] hover:text-[#010b13] p-0.5"
                 title="Clear search"
               >
                 <X className="w-4 h-4" />
@@ -151,7 +151,7 @@ export function MarketplaceFilterBar({ basePath = '/marketplace', targetId = 'br
               value={currentMinFollowers}
               onChange={(e) => updateFilters({ min_followers: e.target.value || null })}
               aria-label="Filter by follower tier"
-              className="text-xs font-semibold rounded-xl border border-[#E4E7EC] bg-white py-2.5 px-3 text-[#101828] shadow-xs focus:border-[#16A36A] outline-none hover:bg-slate-50 transition cursor-pointer"
+              className="text-xs font-semibold rounded-xl border border-[#d2dde4] bg-[#ebf1f5] py-2.5 px-3 text-[#010b13] shadow-xs focus:border-[#010b13] outline-none hover:bg-[#d2dde4]/60 transition cursor-pointer"
             >
               {FOLLOWER_TIERS.map((tier) => (
                 <option key={tier.label} value={tier.value}>
@@ -165,7 +165,7 @@ export function MarketplaceFilterBar({ basePath = '/marketplace', targetId = 'br
               value={currentSort}
               onChange={(e) => updateFilters({ sort: e.target.value || null })}
               aria-label="Sort listings"
-              className="text-xs font-semibold rounded-xl border border-[#E4E7EC] bg-white py-2.5 px-3 text-[#101828] shadow-xs focus:border-[#16A36A] outline-none hover:bg-slate-50 transition cursor-pointer"
+              className="text-xs font-semibold rounded-xl border border-[#d2dde4] bg-[#ebf1f5] py-2.5 px-3 text-[#010b13] shadow-xs focus:border-[#010b13] outline-none hover:bg-[#d2dde4]/60 transition cursor-pointer"
             >
               <option value="newest">Sort: Newly Listed</option>
               <option value="price_asc">Price: Low to High</option>
@@ -179,11 +179,11 @@ export function MarketplaceFilterBar({ basePath = '/marketplace', targetId = 'br
               onClick={() => updateFilters({ monetized: currentMonetized ? null : 'true' })}
               className={`inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl text-xs font-bold transition shadow-xs border cursor-pointer ${
                 currentMonetized
-                  ? 'bg-[#16A36A] text-white border-[#16A36A]'
-                  : 'bg-white text-[#101828] border-[#E4E7EC] hover:bg-slate-50'
+                  ? 'bg-[#010b13] text-[#ebf1f5] border-[#010b13]'
+                  : 'bg-[#ebf1f5] text-[#010b13] border-[#d2dde4] hover:bg-[#d2dde4]/60'
               }`}
             >
-              <Sparkles className={`w-3.5 h-3.5 ${currentMonetized ? 'text-white' : 'text-[#16A36A]'}`} />
+              <Sparkles className={`w-3.5 h-3.5 ${currentMonetized ? 'text-[#ebf1f5]' : 'text-[#010b13]'}`} />
               <span>Monetized Only</span>
             </button>
 
@@ -193,8 +193,8 @@ export function MarketplaceFilterBar({ basePath = '/marketplace', targetId = 'br
               onClick={() => setShowAdvanced(!showAdvanced)}
               className={`inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold border transition cursor-pointer ${
                 showAdvanced || currentMinPrice || currentMaxPrice
-                  ? 'bg-[#18263B] text-white border-[#18263B]'
-                  : 'bg-white text-[#667085] border-[#E4E7EC] hover:bg-slate-50'
+                  ? 'bg-[#010b13] text-[#ebf1f5] border-[#010b13]'
+                  : 'bg-[#ebf1f5] text-[#526371] border-[#d2dde4] hover:bg-[#d2dde4]/60'
               }`}
             >
               <SlidersHorizontal className="w-3.5 h-3.5" />
@@ -218,34 +218,34 @@ export function MarketplaceFilterBar({ basePath = '/marketplace', targetId = 'br
 
         {/* Collapsible Min/Max Price Sub-row */}
         {showAdvanced && (
-          <form onSubmit={handlePriceApply} className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-[#E4E7EC]">
-            <span className="text-xs font-semibold text-[#667085]">Price Range (USD):</span>
+          <form onSubmit={handlePriceApply} className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-[#d2dde4]">
+            <span className="text-xs font-semibold text-[#526371]">Price Range (USD):</span>
             <div className="flex items-center gap-1.5">
-              <span className="text-xs text-[#667085]">$</span>
+              <span className="text-xs text-[#526371]">$</span>
               <input
                 type="number"
                 min="0"
                 placeholder="Min"
                 value={minPriceInput}
                 onChange={(e) => setMinPriceInput(e.target.value)}
-                className="w-24 text-xs py-1.5 px-2.5 rounded-lg border border-[#E4E7EC] bg-[#F7F9FC] focus:bg-white focus:border-[#16A36A] outline-none"
+                className="w-24 text-xs py-1.5 px-2.5 rounded-lg border border-[#d2dde4] bg-[#ebf1f5] focus:bg-white focus:border-[#010b13] outline-none text-[#010b13]"
               />
             </div>
-            <span className="text-xs text-[#667085]">to</span>
+            <span className="text-xs text-[#526371]">to</span>
             <div className="flex items-center gap-1.5">
-              <span className="text-xs text-[#667085]">$</span>
+              <span className="text-xs text-[#526371]">$</span>
               <input
                 type="number"
                 min="0"
                 placeholder="Max"
                 value={maxPriceInput}
                 onChange={(e) => setMaxPriceInput(e.target.value)}
-                className="w-24 text-xs py-1.5 px-2.5 rounded-lg border border-[#E4E7EC] bg-[#F7F9FC] focus:bg-white focus:border-[#16A36A] outline-none"
+                className="w-24 text-xs py-1.5 px-2.5 rounded-lg border border-[#d2dde4] bg-[#ebf1f5] focus:bg-white focus:border-[#010b13] outline-none text-[#010b13]"
               />
             </div>
             <button
               type="submit"
-              className="text-xs font-bold px-3 py-1.5 rounded-lg bg-[#16A36A] text-white hover:bg-[#138a59] transition"
+              className="text-xs font-bold px-3 py-1.5 rounded-lg bg-[#010b13] text-[#ebf1f5] hover:bg-[#0a1722] transition"
             >
               Apply Price
             </button>
@@ -257,7 +257,7 @@ export function MarketplaceFilterBar({ basePath = '/marketplace', targetId = 'br
                   setMaxPriceInput('')
                   updateFilters({ min_price: null, max_price: null })
                 }}
-                className="text-xs text-[#667085] hover:text-[#101828] underline"
+                className="text-xs text-[#526371] hover:text-[#010b13] underline ml-1"
               >
                 Clear Price
               </button>
@@ -266,8 +266,8 @@ export function MarketplaceFilterBar({ basePath = '/marketplace', targetId = 'br
         )}
 
         {/* Platform Selector Chips Row */}
-        <div className="flex items-center gap-2 mt-4 pt-3 border-t border-[#E4E7EC] overflow-x-auto pb-1 scrollbar-none">
-          <span className="text-[11px] font-bold text-[#667085] uppercase tracking-wider font-mono mr-1 shrink-0">
+        <div className="flex items-center gap-2 mt-4 pt-3 border-t border-[#d2dde4] overflow-x-auto pb-1 scrollbar-none">
+          <span className="text-[11px] font-bold text-[#526371] uppercase tracking-wider font-mono mr-1 shrink-0">
             Platform:
           </span>
           {PLATFORMS.map((platform) => {
@@ -281,8 +281,8 @@ export function MarketplaceFilterBar({ basePath = '/marketplace', targetId = 'br
                 onClick={() => updateFilters({ platform: platform.name === 'All' ? null : platform.name })}
                 className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all shadow-xs cursor-pointer ${
                   isSelected
-                    ? 'bg-[#101828] text-white shadow-sm'
-                    : 'bg-[#F7F9FC] text-[#667085] hover:bg-slate-200/70 hover:text-[#101828] border border-[#E4E7EC]'
+                    ? 'bg-[#010b13] text-[#ebf1f5] shadow-sm'
+                    : 'bg-[#ebf1f5] text-[#526371] hover:bg-[#d2dde4] hover:text-[#010b13] border border-[#d2dde4]'
                 }`}
               >
                 {Icon && <Icon className="w-3.5 h-3.5" />}
@@ -295,50 +295,50 @@ export function MarketplaceFilterBar({ basePath = '/marketplace', targetId = 'br
 
         {/* Active Filter Indicators */}
         {hasActiveFilters && (
-          <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-3 border-t border-[#E4E7EC]">
-            <span className="text-[10px] font-mono uppercase text-[#667085] mr-1">Active Filters:</span>
+          <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-3 border-t border-[#d2dde4]">
+            <span className="text-[10px] font-mono uppercase text-[#526371] mr-1">Active Filters:</span>
             
             {currentQ && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-md">
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-[#ebf1f5] text-[#010b13] border border-[#d2dde4] px-2 py-0.5 rounded-md">
                 Search: &ldquo;{currentQ}&rdquo;
                 <button type="button" onClick={() => { setSearchTerm(''); updateFilters({ q: null }) }}>
-                  <X className="w-3 h-3 hover:text-emerald-950" />
+                  <X className="w-3 h-3 hover:text-black" />
                 </button>
               </span>
             )}
 
             {currentPlatform && currentPlatform !== 'All' && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-blue-50 text-blue-800 border border-blue-200 px-2 py-0.5 rounded-md">
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-[#ebf1f5] text-[#010b13] border border-[#d2dde4] px-2 py-0.5 rounded-md">
                 Platform: {currentPlatform}
                 <button type="button" onClick={() => updateFilters({ platform: null })}>
-                  <X className="w-3 h-3 hover:text-blue-950" />
+                  <X className="w-3 h-3 hover:text-black" />
                 </button>
               </span>
             )}
 
             {currentMinFollowers && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-indigo-50 text-indigo-800 border border-indigo-200 px-2 py-0.5 rounded-md">
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-[#ebf1f5] text-[#010b13] border border-[#d2dde4] px-2 py-0.5 rounded-md">
                 Min Followers: {Number(currentMinFollowers).toLocaleString()}+
                 <button type="button" onClick={() => updateFilters({ min_followers: null })}>
-                  <X className="w-3 h-3 hover:text-indigo-950" />
+                  <X className="w-3 h-3 hover:text-black" />
                 </button>
               </span>
             )}
 
             {(currentMinPrice || currentMaxPrice) && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200 px-2 py-0.5 rounded-md">
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-[#ebf1f5] text-[#010b13] border border-[#d2dde4] px-2 py-0.5 rounded-md">
                 Price: ${currentMinPrice || '0'} - ${currentMaxPrice || '∞'}
                 <button type="button" onClick={() => { setMinPriceInput(''); setMaxPriceInput(''); updateFilters({ min_price: null, max_price: null }) }}>
-                  <X className="w-3 h-3 hover:text-amber-950" />
+                  <X className="w-3 h-3 hover:text-black" />
                 </button>
               </span>
             )}
 
             {currentMonetized && (
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-md">
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-[#010b13] text-[#ebf1f5] px-2 py-0.5 rounded-md">
                 Monetized Only
                 <button type="button" onClick={() => updateFilters({ monetized: null })}>
-                  <X className="w-3 h-3 hover:text-emerald-950" />
+                  <X className="w-3 h-3 text-[#ebf1f5] hover:text-white" />
                 </button>
               </span>
             )}

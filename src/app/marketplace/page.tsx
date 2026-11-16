@@ -3,10 +3,6 @@ import Link from 'next/link'
 import { 
   ShieldCheck, 
   Sparkles, 
-  Lock, 
-  ArrowRight, 
-  Layers,
-  ChevronRight,
   Filter
 } from 'lucide-react'
 import { MarketplaceFilterBar } from '@/components/marketplace-filter-bar'
@@ -103,22 +99,22 @@ export default async function MarketplacePage(props: {
   const soldCount = listings.filter((l) => l.status === 'sold').length
 
   return (
-    <div className="bg-[#F7F9FC] min-h-screen py-10 font-sans text-[#101828]">
+    <div className="bg-[#ebf1f5] min-h-screen py-10 font-sans text-[#010b13]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* Marketplace Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-4 border-b border-[#E4E7EC]">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 pb-4 border-b border-[#d2dde4]">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#16A36A] bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#010b13] bg-white px-2.5 py-0.5 rounded-full border border-[#d2dde4]">
                 Live Escrow Marketplace
               </span>
-              <span className="text-xs text-[#667085]">• Guaranteed Transfers</span>
+              <span className="text-xs text-[#526371]">• Guaranteed Transfers</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black text-[#101828] tracking-tight">
+            <h1 className="text-3xl sm:text-4xl font-black text-[#010b13] tracking-tight">
               Verified Digital Assets &amp; Channels
             </h1>
-            <p className="text-sm text-[#667085] mt-1.5 max-w-2xl leading-relaxed">
+            <p className="text-sm text-[#526371] mt-1.5 max-w-2xl leading-relaxed">
               Explore audited social media channels, monetized creator properties, and digital assets. Every order is held safely in Dealoura Escrow until complete ownership is confirmed.
             </p>
           </div>
@@ -126,9 +122,9 @@ export default async function MarketplacePage(props: {
           <div className="flex items-center gap-3">
             <Link
               href="/sell"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#16A36A] hover:bg-[#138a59] text-white font-bold text-xs shadow-sm transition"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#010b13] hover:bg-[#0a1722] text-[#ebf1f5] font-bold text-xs shadow-sm transition"
             >
-              <Sparkles className="w-4 h-4" />
+              <Sparkles className="w-4 h-4 text-[#ebf1f5]" />
               <span>List Your Channel Free</span>
             </Link>
           </div>
@@ -138,13 +134,13 @@ export default async function MarketplacePage(props: {
         <MarketplaceFilterBar basePath="/marketplace" targetId="catalog" />
 
         {/* Results Metadata Bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-[#667085] gap-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between text-xs text-[#526371] gap-2">
           <div>
-            Showing <strong className="text-[#101828] font-bold">{listings.length}</strong> total listings
+            Showing <strong className="text-[#010b13] font-bold">{listings.length}</strong> total listings
             {activeCount > 0 && <span> ({activeCount} active, {soldCount} completed)</span>}
           </div>
           <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 text-[#16A36A]" />
+            <ShieldCheck className="w-4 h-4 text-[#010b13]" />
             <span>All trades protected by 7-day evaluation guarantee</span>
           </div>
         </div>
@@ -156,26 +152,26 @@ export default async function MarketplacePage(props: {
               <ListingCard key={listing.id} listing={listing} />
             ))
           ) : (
-            <div className="col-span-full py-20 text-center bg-white rounded-2xl border border-[#E4E7EC] p-8 space-y-4">
-              <div className="w-14 h-14 rounded-2xl bg-slate-100 text-[#667085] flex items-center justify-center mx-auto">
+            <div className="col-span-full py-20 text-center bg-white rounded-2xl border border-[#d2dde4] p-8 space-y-4">
+              <div className="w-14 h-14 rounded-2xl bg-[#ebf1f5] text-[#010b13] flex items-center justify-center mx-auto">
                 <Filter className="w-7 h-7" />
               </div>
               <div className="space-y-1">
-                <h3 className="text-base font-bold text-[#101828]">No listings found</h3>
-                <p className="text-xs text-[#667085] max-w-sm mx-auto">
+                <h3 className="text-base font-bold text-[#010b13]">No listings found</h3>
+                <p className="text-xs text-[#526371] max-w-sm mx-auto">
                   We couldn&apos;t find any assets matching your exact search and filter criteria.
                 </p>
               </div>
               <div className="flex items-center justify-center gap-3 pt-2">
                 <Link
                   href="/marketplace"
-                  className="px-4 py-2 text-xs font-bold bg-[#101828] text-white rounded-xl hover:bg-[#18263B] transition"
+                  className="px-4 py-2 text-xs font-bold bg-[#ebf1f5] text-[#010b13] border border-[#d2dde4] rounded-xl hover:bg-[#d2dde4] transition"
                 >
                   Reset All Filters
                 </Link>
                 <Link
                   href="/sell"
-                  className="px-4 py-2 text-xs font-bold bg-[#16A36A] text-white rounded-xl hover:bg-[#138a59] transition shadow-xs"
+                  className="px-4 py-2 text-xs font-bold bg-[#010b13] text-[#ebf1f5] rounded-xl hover:bg-[#0a1722] transition shadow-xs"
                 >
                   List an Account
                 </Link>
@@ -185,27 +181,27 @@ export default async function MarketplacePage(props: {
         </div>
 
         {/* Escrow Trust Information Banner */}
-        <div className="bg-white rounded-2xl p-6 sm:p-8 border border-[#E4E7EC] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div className="bg-white rounded-2xl p-6 sm:p-8 border border-[#d2dde4] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-1.5 max-w-2xl">
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#16A36A]">
-              <ShieldCheck className="w-4 h-4" />
+            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-[#010b13]">
+              <ShieldCheck className="w-4 h-4 text-[#010b13]" />
               <span>Dealoura Escrow Buyer Protection</span>
             </div>
-            <h3 className="text-lg font-bold text-[#101828]">Looking for a specific niche or high-revenue property?</h3>
-            <p className="text-xs text-[#667085] leading-relaxed">
+            <h3 className="text-lg font-bold text-[#010b13]">Looking for a specific niche or high-revenue property?</h3>
+            <p className="text-xs text-[#526371] leading-relaxed">
               Our escrow desk verifies organic reach, checks copyright strikes, and ensures complete 2FA handover for every transaction.
             </p>
           </div>
           <div className="flex items-center gap-3 shrink-0">
             <Link
               href="/how-it-works"
-              className="px-5 py-2.5 rounded-xl border border-[#E4E7EC] text-xs font-bold text-[#101828] hover:bg-slate-50 transition"
+              className="px-5 py-2.5 rounded-xl border border-[#d2dde4] bg-[#ebf1f5] text-xs font-bold text-[#010b13] hover:bg-[#d2dde4] transition"
             >
               How It Works
             </Link>
             <Link
               href="/sell"
-              className="px-5 py-2.5 rounded-xl bg-[#101828] text-white text-xs font-bold hover:bg-[#18263B] transition"
+              className="px-5 py-2.5 rounded-xl bg-[#010b13] text-[#ebf1f5] text-xs font-bold hover:bg-[#0a1722] transition"
             >
               Start Selling
             </Link>
