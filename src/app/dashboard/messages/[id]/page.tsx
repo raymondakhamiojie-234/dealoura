@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation'
 import LiveChat from './LiveChat'
 
 export default async function ChatPage(props: { params: Promise<{ id: string }> }) {
-  const params = await props.params;
+  const params = await props.params
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -14,7 +14,7 @@ export default async function ChatPage(props: { params: Promise<{ id: string }> 
     .from('conversations')
     .select(`
       *,
-      listings (title, price),
+      listings (title, price, platform),
       buyer:buyer_id (username),
       seller:seller_id (username)
     `)
@@ -34,9 +34,9 @@ export default async function ChatPage(props: { params: Promise<{ id: string }> 
   const isBuyer = convo.buyer_id === user.id
   const otherUser = isBuyer ? convo.seller?.username : convo.buyer?.username
 
-  // Simulate Banned status for the spammer (If username contains 'spam' or 'banned')
+  // Simulate Banned status for spammer (If username contains 'spam' or 'banned')
   const isBanned = otherUser?.toLowerCase().includes('spam') || otherUser?.toLowerCase().includes('banned')
-  const displayUser = isBanned ? 'Unknown' : otherUser
+  const displayUser = isBanned ? 'Suspended User' : otherUser
 
   return (
     <>
@@ -50,26 +50,39 @@ export default async function ChatPage(props: { params: Promise<{ id: string }> 
       />
 
       {/* Right Column: User Profile context */}
-      <div className="w-64 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col p-6 hidden lg:flex items-center text-center">
-        <div className="w-24 h-24 rounded-full bg-blue-50 border-2 border-blue-100 flex items-center justify-center mb-4">
-          <span className="text-3xl font-bold text-blue-600">
+      <div className="w-68 bg-[#ffffff] rounded-2xl shadow-xs border border-[#d2dde4] flex flex-col p-6 hidden lg:flex items-center text-center shrink-0">
+        <div className="w-20 h-20 rounded-2xl bg-[#010b13] text-[#ebf1f5] flex items-center justify-center mb-3 shadow-xs">
+          <span className="text-2xl font-black font-mono">
             {displayUser?.charAt(0).toUpperCase()}
           </span>
         </div>
         
-        <p className="text-xs text-gray-500 mb-1">Last online 41 minutes ago</p>
-        <h3 className="text-xl font-bold text-gray-900">{displayUser}</h3>
+        <h3 className="text-base font-black text-[#010b13]">@{displayUser}</h3>
+        <p className="text-[11px] font-mono text-[#526371] mt-0.5">
+          {isBuyer ? 'Channel Seller' : 'Interested Buyer'}
+        </p>
         
         {isBanned && (
-          <span className="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-            (banned)
+          <span className="mt-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-red-100 text-red-800">
+            Account Suspended
           </span>
         )}
 
-        <div className="mt-8 w-full border-t border-gray-100 pt-6">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Subject</p>
-          <p className="text-sm font-medium text-gray-900">{convo.listings?.title}</p>
-          <p className="text-lg font-bold text-blue-600 mt-1">${convo.listings?.price}</p>
+        <div className="mt-6 w-full border-t border-[#d2dde4] pt-5 text-left space-y-2">
+          <span className="text-[10px] font-mono uppercase font-bold text-[#526371] block">Referenced Asset</span>
+          <p className="text-xs font-bold text-[#010b13] leading-snug line-clamp-2">{convo.listings?.title}</p>
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-[11px] font-mono font-bold px-2 py-0.5 rounded-md bg-[#ebf1f5] text-[#010b13] border border-[#d2dde4]">
+              {convo.listings?.platform || 'Asset'}
+            </span>
+            <span className="text-sm font-black font-mono text-[#010b13]">${convo.listings?.price}</span>
+          </div>
+        </div>
+
+        <div className="mt-auto w-full pt-4 border-t border-[#d2dde4]">
+          <p className="text-[10px] text-[#526371] leading-relaxed">
+            All conversations are logged for dispute resolution and buyer/seller protection.
+          </p>
         </div>
       </div>
     </>

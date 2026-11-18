@@ -7,7 +7,7 @@ import { LayoutDashboard, RefreshCw, CheckSquare, FileText, AlertTriangle } from
 const NAV_ITEMS = [
   { label: 'Overview', href: '/admin', icon: LayoutDashboard },
   { label: 'Escrow Deals', href: '/admin/transactions', icon: RefreshCw },
-  { label: 'Pending Listings', href: '/admin/listings', icon: CheckSquare },
+  { label: 'Listings Review', href: '/admin/listings', icon: CheckSquare },
   { label: 'KYC Docs', href: '/admin/verifications', icon: FileText },
   { label: 'Disputes', href: '/admin/disputes', icon: AlertTriangle },
 ]
@@ -28,10 +28,10 @@ export default function AdminNavLinks() {
           <Link
             key={item.href}
             href={item.href}
-            className={`flex items-center space-x-2 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+            className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs font-bold transition ${
               isActive
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                ? 'bg-[#ebf1f5] text-[#010b13]'
+                : 'text-[#ebf1f5]/80 hover:text-[#ebf1f5] hover:bg-[#18263B]'
             }`}
           >
             <Icon className="w-3.5 h-3.5" />

@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { resendVerification } from '@/app/actions/auth'
+import { Mail, CheckCircle2, ArrowLeft } from 'lucide-react'
 
 export default async function VerifyEmailPage(props: { searchParams: Promise<{ email?: string, resent?: string, error?: string }> }) {
   const searchParams = await props.searchParams
@@ -8,34 +9,41 @@ export default async function VerifyEmailPage(props: { searchParams: Promise<{ e
   const error = searchParams.error
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4">
-      <div className="w-full max-w-md space-y-6 rounded-xl bg-white p-8 shadow-md text-center">
-        <h2 className="text-2xl font-bold tracking-tight text-gray-900">
-          Check your email
-        </h2>
-        <p className="text-gray-600">
-          We sent you a verification link. Please check your email to verify your account before logging in.
-        </p>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#ebf1f5] p-4">
+      <div className="w-full max-w-md space-y-6 rounded-2xl bg-[#ffffff] p-8 shadow-xs border border-[#d2dde4] text-center">
+        <div className="w-14 h-14 bg-[#010b13] text-[#ebf1f5] rounded-2xl flex items-center justify-center mx-auto shadow-xs">
+          <Mail className="w-7 h-7" />
+        </div>
+
+        <div>
+          <h2 className="text-2xl font-black tracking-tight text-[#010b13]">
+            Check your email
+          </h2>
+          <p className="text-xs text-[#526371] mt-2 leading-relaxed">
+            We sent a secure verification link to your inbox. Click the link to activate your Dealoura marketplace account before logging in.
+          </p>
+        </div>
 
         {error && (
-          <div className="bg-red-50 text-red-600 p-3 rounded-md text-sm">
+          <div className="bg-red-50 text-red-700 p-3.5 rounded-xl text-xs border border-red-200">
             {error}
           </div>
         )}
 
         {resent && (
-          <div className="bg-green-50 text-green-700 p-3 rounded-md text-sm font-medium">
-            A new verification email has been sent!
+          <div className="bg-[#ebf1f5] text-[#010b13] p-3.5 rounded-xl text-xs font-bold border border-[#d2dde4] flex items-center justify-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-[#010b13]" />
+            <span>A fresh verification link has been sent!</span>
           </div>
         )}
 
         {email && (
-          <form action={resendVerification as any} className="pt-4 border-t border-gray-100">
+          <form action={resendVerification as any} className="pt-4 border-t border-[#d2dde4]">
             <input type="hidden" name="email" value={email} />
-            <p className="text-sm text-gray-500 mb-3">Didn't receive the email?</p>
+            <p className="text-xs text-[#526371] mb-3">Didn&apos;t receive the email in your inbox or spam?</p>
             <button
               type="submit"
-              className="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="w-full py-2.5 px-4 border border-[#d2dde4] rounded-xl text-xs font-bold text-[#010b13] bg-[#ebf1f5] hover:bg-[#d2dde4] transition cursor-pointer"
             >
               Resend Verification Email
             </button>
@@ -45,9 +53,9 @@ export default async function VerifyEmailPage(props: { searchParams: Promise<{ e
         <div className="pt-2">
           <Link 
             href="/login" 
-            className="text-indigo-600 hover:text-indigo-500 font-medium text-sm"
+            className="inline-flex items-center gap-1.5 text-[#010b13] hover:underline font-bold text-xs"
           >
-            &larr; Return to login
+            <ArrowLeft className="w-3.5 h-3.5" /> Return to login
           </Link>
         </div>
       </div>

@@ -28,27 +28,27 @@ export default async function AdminLayout({
   // If not admin, show 403 Access Denied
   if (!isAdmin) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-2xl shadow-sm border border-red-100 p-8 text-center space-y-4">
-          <div className="w-16 h-16 bg-red-50 text-red-600 rounded-full flex items-center justify-center mx-auto">
+      <div className="min-h-screen bg-[#ebf1f5] flex flex-col items-center justify-center p-4">
+        <div className="max-w-md w-full bg-[#ffffff] rounded-2xl shadow-xs border border-[#d2dde4] p-8 text-center space-y-4">
+          <div className="w-16 h-16 bg-[#010b13] text-[#ebf1f5] rounded-2xl flex items-center justify-center mx-auto shadow-xs">
             <ShieldAlert className="w-8 h-8" />
           </div>
-          <h1 className="text-2xl font-black text-gray-900">403 - Access Denied</h1>
-          <p className="text-sm text-gray-600">
-            This portal is restricted strictly to Dealoura administrators and authorized escrow staff.
+          <h1 className="text-2xl font-black text-[#010b13]">403 — Restricted Area</h1>
+          <p className="text-xs text-[#526371] leading-relaxed">
+            This portal is restricted strictly to Dealoura administrators and authorized escrow compliance officers.
           </p>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 text-left">
-            <p className="font-bold mb-1">Are you the site owner?</p>
+          <div className="bg-[#ebf1f5] border border-[#d2dde4] rounded-xl p-4 text-xs text-[#526371] text-left">
+            <p className="font-bold text-[#010b13] mb-1">Site Operator Notice</p>
             <p>
-              Run the query in <code className="bg-amber-100 px-1 rounded font-semibold">schema-phase10-admin.sql</code> inside your Supabase SQL Editor to assign the <strong>admin</strong> role to your email.
+              To grant access, assign the <strong>admin</strong> role to this user account in the <code className="bg-[#ffffff] px-1 py-0.5 rounded font-mono text-[#010b13] border border-[#d2dde4]">user_profiles</code> database table.
             </p>
           </div>
 
           <div className="pt-2">
             <Link
               href="/"
-              className="inline-flex items-center justify-center w-full py-2.5 px-4 bg-gray-900 hover:bg-black text-white text-sm font-bold rounded-xl transition"
+              className="inline-flex items-center justify-center w-full py-3 px-4 bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] text-xs font-bold rounded-xl transition cursor-pointer"
             >
               <ArrowLeft className="w-4 h-4 mr-2" /> Back to Marketplace
             </Link>
@@ -59,19 +59,19 @@ export default async function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#ebf1f5]">
       {/* Admin Top Navigation */}
-      <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-40">
+      <header className="bg-[#010b13] border-b border-[#18263B] sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             
             {/* Left: Brand & Admin Tag */}
             <div className="flex items-center space-x-3">
-              <Link href="/" className="flex items-center space-x-2 text-white font-black text-lg tracking-tight">
-                <span className="text-blue-500">Dealoura</span>
+              <Link href="/" className="flex items-center space-x-2 text-[#ebf1f5] font-black text-lg tracking-tight">
+                <span>Dealoura</span>
               </Link>
-              <span className="bg-blue-500/20 text-blue-400 text-[10px] font-extrabold uppercase px-2 py-0.5 rounded border border-blue-500/30">
-                Staff Portal
+              <span className="bg-[#18263B] text-[#ebf1f5] text-[10px] font-mono font-extrabold uppercase px-2 py-0.5 rounded-full border border-[#d2dde4]/20">
+                Staff Desk
               </span>
             </div>
 
@@ -81,12 +81,12 @@ export default async function AdminLayout({
             {/* Right: Current Admin & Exit */}
             <div className="flex items-center space-x-4">
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-bold text-white">@{profile.username}</p>
-                <p className="text-[10px] text-blue-400 font-semibold uppercase">Administrator</p>
+                <p className="text-xs font-bold text-[#ebf1f5]">@{profile.username}</p>
+                <p className="text-[10px] text-[#526371] font-mono uppercase">Administrator</p>
               </div>
               <Link
                 href="/"
-                className="text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 py-1.5 px-3 rounded-lg border border-slate-700 transition"
+                className="text-xs font-bold text-[#ebf1f5] hover:bg-[#18263B] bg-[#010b13] py-1.5 px-3 rounded-xl border border-[#d2dde4]/30 transition"
               >
                 Exit to Site &rarr;
               </Link>

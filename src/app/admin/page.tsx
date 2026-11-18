@@ -69,8 +69,13 @@ export default async function AdminDashboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Staff Command Center</h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <div className="flex items-center space-x-2 mb-2">
+          <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#010b13] text-[#ebf1f5]">
+            Administration & Governance
+          </span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-black text-[#010b13] tracking-tight">Staff Command Center</h1>
+        <p className="text-xs sm:text-sm text-[#526371] mt-1">
           Monitor platform transactions, escrow middle-man transfers, listings review, and user safety.
         </p>
       </div>
@@ -78,61 +83,61 @@ export default async function AdminDashboardPage() {
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {/* Active Escrow */}
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-blue-600 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Active Escrow</span>
-            <RefreshCw className="w-5 h-5 text-blue-500" />
+        <div className="bg-[#ffffff] p-5 rounded-2xl shadow-xs border border-[#d2dde4] flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#010b13] mb-2">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#526371]">Active Escrow</span>
+            <RefreshCw className="w-4 h-4 text-[#010b13]" />
           </div>
-          <div className="text-3xl font-black text-gray-900">{activeEscrowCount || 0}</div>
-          <Link href="/admin/transactions" className="text-xs font-semibold text-blue-600 hover:underline mt-2 inline-flex items-center">
+          <div className="text-2xl sm:text-3xl font-black font-mono text-[#010b13]">{activeEscrowCount || 0}</div>
+          <Link href="/admin/transactions" className="text-[11px] font-bold text-[#010b13] hover:underline mt-2 inline-flex items-center">
             Inspect pipeline &rarr;
           </Link>
         </div>
 
         {/* Pending Listings */}
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-indigo-600 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Listings Review</span>
-            <CheckSquare className="w-5 h-5 text-indigo-500" />
+        <div className="bg-[#ffffff] p-5 rounded-2xl shadow-xs border border-[#d2dde4] flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#010b13] mb-2">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#526371]">Listings Review</span>
+            <CheckSquare className="w-4 h-4 text-[#010b13]" />
           </div>
-          <div className="text-3xl font-black text-gray-900">{pendingListingsCount || 0}</div>
-          <Link href="/admin/listings" className="text-xs font-semibold text-indigo-600 hover:underline mt-2 inline-flex items-center">
+          <div className="text-2xl sm:text-3xl font-black font-mono text-[#010b13]">{pendingListingsCount || 0}</div>
+          <Link href="/admin/listings" className="text-[11px] font-bold text-[#010b13] hover:underline mt-2 inline-flex items-center">
             Review accounts &rarr;
           </Link>
         </div>
 
         {/* Pending KYC */}
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-amber-600 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-500">KYC Verifications</span>
-            <FileText className="w-5 h-5 text-amber-500" />
+        <div className="bg-[#ffffff] p-5 rounded-2xl shadow-xs border border-[#d2dde4] flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#010b13] mb-2">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#526371]">KYC Verifications</span>
+            <FileText className="w-4 h-4 text-[#010b13]" />
           </div>
-          <div className="text-3xl font-black text-gray-900">{pendingVerificationsCount || 0}</div>
-          <Link href="/admin/verifications" className="text-xs font-semibold text-amber-600 hover:underline mt-2 inline-flex items-center">
+          <div className="text-2xl sm:text-3xl font-black font-mono text-[#010b13]">{pendingVerificationsCount || 0}</div>
+          <Link href="/admin/verifications" className="text-[11px] font-bold text-[#010b13] hover:underline mt-2 inline-flex items-center">
             Inspect IDs &rarr;
           </Link>
         </div>
 
         {/* Disputes */}
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
-          <div className="flex items-center justify-between text-red-600 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Open Disputes</span>
-            <AlertTriangle className="w-5 h-5 text-red-500" />
+        <div className="bg-[#ffffff] p-5 rounded-2xl shadow-xs border border-[#d2dde4] flex flex-col justify-between">
+          <div className="flex items-center justify-between text-[#010b13] mb-2">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#526371]">Open Disputes</span>
+            <AlertTriangle className="w-4 h-4 text-[#010b13]" />
           </div>
-          <div className="text-3xl font-black text-gray-900">{openDisputesCount || 0}</div>
-          <Link href="/admin/disputes" className="text-xs font-semibold text-red-600 hover:underline mt-2 inline-flex items-center">
+          <div className="text-2xl sm:text-3xl font-black font-mono text-[#010b13]">{openDisputesCount || 0}</div>
+          <Link href="/admin/disputes" className="text-[11px] font-bold text-[#010b13] hover:underline mt-2 inline-flex items-center">
             Resolve tickets &rarr;
           </Link>
         </div>
 
         {/* Total Users */}
-        <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between col-span-2 md:col-span-1">
-          <div className="flex items-center justify-between text-purple-600 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-500">Total Users</span>
-            <Users className="w-5 h-5 text-purple-500" />
+        <div className="bg-[#ffffff] p-5 rounded-2xl shadow-xs border border-[#d2dde4] flex flex-col justify-between col-span-2 md:col-span-1">
+          <div className="flex items-center justify-between text-[#010b13] mb-2">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#526371]">Total Users</span>
+            <Users className="w-4 h-4 text-[#010b13]" />
           </div>
-          <div className="text-3xl font-black text-gray-900">{totalUsersCount || 0}</div>
-          <span className="text-xs text-gray-400 mt-2">Registered Accounts</span>
+          <div className="text-2xl sm:text-3xl font-black font-mono text-[#010b13]">{totalUsersCount || 0}</div>
+          <span className="text-[11px] text-[#526371] mt-2">Registered Accounts</span>
         </div>
       </div>
 
@@ -143,15 +148,15 @@ export default async function AdminDashboardPage() {
       <AdminEmailTestCard />
 
       {/* Recent Escrow Pipeline Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-between">
+      <div className="bg-[#ffffff] rounded-2xl shadow-xs border border-[#d2dde4] overflow-hidden">
+        <div className="p-6 border-b border-[#d2dde4] flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">Recent Escrow Transactions</h2>
-            <p className="text-xs text-gray-500 mt-0.5">Middle-man transfer deals requiring escrow verification</p>
+            <h2 className="text-base sm:text-lg font-black text-[#010b13]">Recent Escrow Transactions</h2>
+            <p className="text-xs text-[#526371] mt-0.5">Middle-man transfer deals requiring escrow verification</p>
           </div>
           <Link
             href="/admin/transactions"
-            className="text-xs font-bold text-blue-600 hover:text-blue-700 inline-flex items-center"
+            className="text-xs font-bold text-[#010b13] underline inline-flex items-center"
           >
             View all deals <ArrowRight className="w-3.5 h-3.5 ml-1" />
           </Link>
@@ -159,8 +164,8 @@ export default async function AdminDashboardPage() {
 
         {recentTransactions && recentTransactions.length > 0 ? (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-gray-600">
-              <thead className="bg-slate-50 text-[11px] font-bold uppercase text-gray-400 border-b border-gray-100">
+            <table className="w-full text-left text-xs text-[#526371]">
+              <thead className="bg-[#ebf1f5] text-[10px] font-mono font-bold uppercase text-[#526371] border-b border-[#d2dde4]">
                 <tr>
                   <th className="py-3 px-6">Account</th>
                   <th className="py-3 px-6">Buyer</th>
@@ -170,26 +175,26 @@ export default async function AdminDashboardPage() {
                   <th className="py-3 px-6 text-right">Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-[#d2dde4]">
                 {recentTransactions.map((tx: any) => {
                   return (
-                    <tr key={tx.id} className="hover:bg-slate-50/50 transition">
-                      <td className="py-4 px-6 font-semibold text-gray-900">
+                    <tr key={tx.id} className="hover:bg-[#ebf1f5]/40 transition">
+                      <td className="py-4 px-6 font-bold text-[#010b13]">
                         <div className="truncate max-w-[200px]">{tx.listings?.title || 'Listing'}</div>
-                        <span className="text-[10px] text-gray-400 font-normal">{tx.listings?.platform}</span>
+                        <span className="text-[10px] text-[#526371] font-normal">{tx.listings?.platform}</span>
                       </td>
-                      <td className="py-4 px-6 font-medium">@{tx.buyer?.username || 'Buyer'}</td>
-                      <td className="py-4 px-6 font-medium">@{tx.seller?.username || 'Seller'}</td>
-                      <td className="py-4 px-6 font-black text-gray-900">${tx.agreed_price}</td>
+                      <td className="py-4 px-6 font-medium text-[#010b13]">@{tx.buyer?.username || 'Buyer'}</td>
+                      <td className="py-4 px-6 font-medium text-[#010b13]">@{tx.seller?.username || 'Seller'}</td>
+                      <td className="py-4 px-6 font-black font-mono text-[#010b13]">${tx.agreed_price}</td>
                       <td className="py-4 px-6">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold capitalize bg-blue-50 text-blue-700 border border-blue-100">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold capitalize bg-[#ebf1f5] text-[#010b13] border border-[#d2dde4]">
                           {tx.status?.replace(/_/g, ' ')}
                         </span>
                       </td>
                       <td className="py-4 px-6 text-right">
                         <Link
                           href={`/dashboard/transactions/${tx.id}`}
-                          className="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 py-1.5 px-3 rounded-lg transition"
+                          className="text-xs font-bold text-[#ebf1f5] bg-[#010b13] hover:bg-[#18263B] py-1.5 px-3 rounded-lg transition"
                         >
                           Manage Deal
                         </Link>
@@ -201,7 +206,7 @@ export default async function AdminDashboardPage() {
             </table>
           </div>
         ) : (
-          <div className="p-12 text-center text-gray-400 text-sm">
+          <div className="p-12 text-center text-[#526371] text-xs">
             No transactions initiated yet.
           </div>
         )}

@@ -9,16 +9,23 @@ export default function ActiveConversationLink({ id, username, listingTitle }: {
 
   return (
     <li>
-      <Link href={`/dashboard/messages/${id}`} className={`block p-4 transition ${isActive ? 'bg-blue-50 border-l-4 border-blue-600' : 'hover:bg-gray-50 border-l-4 border-transparent'}`}>
+      <Link
+        href={`/dashboard/messages/${id}`}
+        className={`block p-3.5 transition border-l-3 ${
+          isActive
+            ? 'bg-[#ebf1f5] border-[#010b13]'
+            : 'hover:bg-[#ebf1f5]/60 border-transparent'
+        }`}
+      >
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold flex-shrink-0">
+          <div className="w-9 h-9 rounded-xl bg-[#010b13] text-[#ebf1f5] flex items-center justify-center font-bold text-xs shrink-0">
             {username.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">
-            <p className={`text-sm font-semibold truncate ${isActive ? 'text-blue-900' : 'text-gray-900'}`}>
-              {username}
+            <p className={`text-xs font-bold truncate ${isActive ? 'text-[#010b13]' : 'text-[#010b13]'}`}>
+              @{username}
             </p>
-            <p className="text-xs text-gray-500 truncate">{listingTitle}</p>
+            <p className="text-[11px] text-[#526371] truncate mt-0.5">{listingTitle}</p>
           </div>
         </div>
       </Link>

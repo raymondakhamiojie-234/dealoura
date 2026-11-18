@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { submitAccountCredentials } from '@/app/actions/transactions'
-import { Lock, KeyRound, ShieldAlert, CheckCircle2 } from 'lucide-react'
+import { Lock, KeyRound, ShieldAlert, CheckCircle2, ShieldCheck, ArrowRight } from 'lucide-react'
 
 export function EscrowCredentialVault({ transactionId }: { transactionId: string }) {
   const [loading, setLoading] = useState(false)
@@ -30,39 +30,42 @@ export function EscrowCredentialVault({ transactionId }: { transactionId: string
 
   if (isSuccess) {
     return (
-      <div className="bg-green-50 border border-green-200 rounded-2xl p-6 text-center space-y-2">
-        <CheckCircle2 className="w-8 h-8 text-green-600 mx-auto" />
-        <h4 className="text-base font-bold text-green-900">Credentials Received by Escrow Agent!</h4>
-        <p className="text-xs text-green-700">
-          Our team is currently verifying account ownership and will invite the buyer as a manager shortly.
+      <div className="bg-[#ffffff] border border-[#d2dde4] rounded-2xl p-6 sm:p-8 text-center space-y-3 shadow-xs">
+        <div className="w-12 h-12 rounded-full bg-[#010b13] text-[#ebf1f5] flex items-center justify-center mx-auto">
+          <CheckCircle2 className="w-6 h-6" />
+        </div>
+        <h4 className="text-base sm:text-lg font-black text-[#010b13]">Credentials Safely Received by Escrow Agent</h4>
+        <p className="text-xs text-[#526371] max-w-md mx-auto leading-relaxed">
+          Our specialized escrow inspection desk is verifying account ownership and will securely invite the buyer as manager shortly.
         </p>
       </div>
     )
   }
 
   return (
-    <div className="bg-white border border-blue-200 rounded-2xl p-6 space-y-4 shadow-sm">
-      <div className="flex items-start space-x-3 border-b border-gray-100 pb-4">
-        <div className="p-2.5 bg-blue-50 text-blue-600 rounded-xl">
+    <div className="bg-[#ffffff] border border-[#d2dde4] rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs">
+      <div className="flex items-start space-x-3.5 border-b border-[#d2dde4] pb-5">
+        <div className="p-3 bg-[#010b13] text-[#ebf1f5] rounded-xl shrink-0">
           <KeyRound className="w-5 h-5" />
         </div>
         <div>
-          <h3 className="text-base font-bold text-gray-900">Secure Account Hand-off to Escrow</h3>
-          <p className="text-xs text-gray-500 mt-0.5">
-            Buyer funds are locked in Escrow. Please submit access credentials for verification.
+          <span className="text-[10px] font-mono uppercase tracking-wider font-bold text-[#526371] block">Step 2: Vault Hand-Off</span>
+          <h3 className="text-base sm:text-lg font-black text-[#010b13] mt-0.5">Secure Account Hand-off to Escrow</h3>
+          <p className="text-xs text-[#526371] mt-1 leading-relaxed">
+            Buyer funds are verified and locked in the Dealoura Escrow Vault. Submit your temporary access credentials below for inspection.
           </p>
         </div>
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 text-xs text-red-700 rounded-xl font-medium">
+        <div className="p-3.5 bg-red-50 text-xs text-red-700 rounded-xl font-medium border border-red-200">
           {error}
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+          <label className="block text-xs font-bold text-[#010b13] uppercase tracking-wider mb-1.5">
             Login Email or Username <span className="text-red-500">*</span>
           </label>
           <input
@@ -70,12 +73,12 @@ export function EscrowCredentialVault({ transactionId }: { transactionId: string
             name="account_login"
             required
             placeholder="e.g. channel_admin@gmail.com"
-            className="w-full text-sm rounded-xl border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
+            className="w-full text-xs font-medium rounded-xl border border-[#d2dde4] bg-[#ebf1f5]/40 text-[#010b13] px-3.5 py-2.5 focus:border-[#010b13] focus:bg-[#ffffff] outline-none transition"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
+          <label className="block text-xs font-bold text-[#010b13] uppercase tracking-wider mb-1.5">
             Current Temporary Password <span className="text-red-500">*</span>
           </label>
           <input
@@ -83,47 +86,56 @@ export function EscrowCredentialVault({ transactionId }: { transactionId: string
             name="account_password"
             required
             placeholder="••••••••••••"
-            className="w-full text-sm rounded-xl border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none font-mono"
+            className="w-full text-xs font-mono rounded-xl border border-[#d2dde4] bg-[#ebf1f5]/40 text-[#010b13] px-3.5 py-2.5 focus:border-[#010b13] focus:bg-[#ffffff] outline-none transition"
           />
+          <p className="text-[11px] text-[#526371] mt-1">
+            Always set a temporary throwaway password before submitting to Escrow.
+          </p>
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-            2FA Backup Codes / Verification PIN <span className="text-gray-400 font-normal">(Optional)</span>
+          <label className="block text-xs font-bold text-[#010b13] uppercase tracking-wider mb-1.5">
+            2FA Backup Codes / Verification PIN <span className="text-[#526371] font-normal normal-case">(Optional)</span>
           </label>
           <input
             type="text"
             name="backup_codes"
             placeholder="e.g. Backup codes: 49302, 19284 or Security question answers"
-            className="w-full text-sm rounded-xl border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
+            className="w-full text-xs font-medium rounded-xl border border-[#d2dde4] bg-[#ebf1f5]/40 text-[#010b13] px-3.5 py-2.5 focus:border-[#010b13] focus:bg-[#ffffff] outline-none transition"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1">
-            Additional Instructions for Agent <span className="text-gray-400 font-normal">(Optional)</span>
+          <label className="block text-xs font-bold text-[#010b13] uppercase tracking-wider mb-1.5">
+            Special Hand-off Instructions <span className="text-[#526371] font-normal normal-case">(Optional)</span>
           </label>
           <textarea
-            name="notes"
+            name="instructions"
             rows={2}
-            placeholder="Any specific instructions (e.g. 'Invite buyer email buyer@example.com as Brand Manager')"
-            className="w-full text-sm rounded-xl border border-gray-300 p-2.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none"
+            placeholder="Any specific instructions on brand account transfer, primary owner invite timing, or email access..."
+            className="w-full text-xs font-medium rounded-xl border border-[#d2dde4] bg-[#ebf1f5]/40 text-[#010b13] p-3 focus:border-[#010b13] focus:bg-[#ffffff] outline-none transition"
           />
         </div>
 
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 flex items-start space-x-2">
-          <ShieldAlert className="w-4 h-4 shrink-0 text-amber-600 mt-0.5" />
-          <span>
-            These credentials are encrypted and accessible strictly by authorized Dealoura Escrow agents. Never send login credentials in open chat.
-          </span>
+        <div className="p-3.5 bg-[#ebf1f5] rounded-xl border border-[#d2dde4] text-[11px] text-[#526371] flex items-center space-x-2">
+          <ShieldAlert className="w-4 h-4 text-[#010b13] shrink-0" />
+          <span>Only the Dealoura Escrow Officer can decrypt these credentials. They are never shared directly with the buyer until ownership is verified.</span>
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl transition shadow-sm disabled:opacity-50"
+          className="w-full py-3.5 px-5 bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] font-extrabold text-xs rounded-xl shadow-xs transition disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
         >
-          {loading ? 'Submitting to Escrow...' : 'Submit Credentials to Escrow Agent'}
+          {loading ? (
+            <span>Encrypting & Submitting to Escrow...</span>
+          ) : (
+            <>
+              <Lock className="w-4 h-4 text-[#ebf1f5]" />
+              <span>Submit Credentials to Escrow Officer</span>
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
         </button>
       </form>
     </div>

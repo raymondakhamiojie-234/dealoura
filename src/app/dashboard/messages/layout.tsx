@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { MessageSquare, ShieldCheck } from 'lucide-react'
-import ActiveConversationLink from './ActiveConversationLink' // We will create this client component
+import ActiveConversationLink from './ActiveConversationLink'
 
 export default async function MessagesLayout({
   children,
@@ -30,65 +30,72 @@ export default async function MessagesLayout({
     .order('updated_at', { ascending: false })
 
   return (
-    <div className="max-w-[1600px] mx-auto w-full h-[calc(100vh-80px)] p-4 flex gap-4">
-      
-      {/* 1. Left Sidebar: Conversations List */}
-      <div className="w-80 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden hidden md:flex">
-        <div className="p-4 border-b border-gray-200 bg-gray-50 flex items-center">
-          <h2 className="font-bold text-gray-900 flex items-center">
-            <MessageSquare className="w-5 h-5 mr-2 text-blue-600" />
-            Messages
-          </h2>
-        </div>
+    <div className="bg-[#ebf1f5] min-h-[calc(100vh-70px)] p-4 sm:p-6">
+      <div className="max-w-[1500px] mx-auto w-full h-[calc(100vh-130px)] flex gap-4">
         
-        <div className="flex-1 overflow-y-auto">
-          {conversations && conversations.length > 0 ? (
-            <ul className="divide-y divide-gray-100">
-              {conversations.map((convo) => {
-                const isBuyer = convo.buyer_id === user.id
-                const seller = convo.seller as any;
-                const buyer = convo.buyer as any;
-                const otherUser = isBuyer ? seller?.username : buyer?.username
+        {/* 1. Left Sidebar: Conversations List */}
+        <div className="w-80 bg-[#ffffff] rounded-2xl shadow-xs border border-[#d2dde4] flex flex-col overflow-hidden hidden md:flex shrink-0">
+          <div className="p-4 border-b border-[#d2dde4] bg-[#ebf1f5]/50 flex items-center justify-between">
+            <h2 className="font-black text-sm text-[#010b13] flex items-center">
+              <MessageSquare className="w-4 h-4 mr-2 text-[#010b13]" />
+              Dealoura Messages
+            </h2>
+            <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#010b13] text-[#ebf1f5]">
+              {conversations?.length || 0}
+            </span>
+          </div>
+          
+          <div className="flex-1 overflow-y-auto">
+            {conversations && conversations.length > 0 ? (
+              <ul className="divide-y divide-[#d2dde4]">
+                {conversations.map((convo) => {
+                  const isBuyer = convo.buyer_id === user.id
+                  const seller = convo.seller as any
+                  const buyer = convo.buyer as any
+                  const otherUser = isBuyer ? seller?.username : buyer?.username
 
-                return (
-                  <ActiveConversationLink 
-                    key={convo.id} 
-                    id={convo.id} 
-                    username={otherUser || 'Unknown'} 
-                    listingTitle={(convo.listings as any)?.title || 'Unknown Item'}
-                  />
-                )
-              })}
-            </ul>
-          ) : (
-            <div className="p-6 text-center text-sm text-gray-500">
-              No conversations yet.
-            </div>
-          )}
-        </div>
-
-        {/* Pinned Escrow Agent Button */}
-        <div className="p-4 border-t border-gray-200 bg-slate-900 mt-auto">
-          <Link href="/dashboard/messages/escrow" className="flex items-center space-x-3 group">
-            <div className="relative">
-              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
-                <ShieldCheck className="w-6 h-6 text-white" />
+                  return (
+                    <ActiveConversationLink 
+                      key={convo.id} 
+                      id={convo.id} 
+                      username={otherUser || 'User'} 
+                      listingTitle={(convo.listings as any)?.title || 'Digital Asset'}
+                    />
+                  )
+                })}
+              </ul>
+            ) : (
+              <div className="p-6 text-center text-xs text-[#526371]">
+                No conversations yet. Inquire or make an offer on any listing to start.
               </div>
-              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-slate-900 rounded-full"></div>
-            </div>
-            <div className="flex-1">
-              <p className="text-white font-semibold group-hover:text-blue-400 transition">Escrow Agent</p>
-              <p className="text-xs text-slate-400">Online</p>
-            </div>
-          </Link>
+            )}
+          </div>
+
+          {/* Pinned Escrow Agent Button */}
+          <div className="p-3.5 border-t border-[#18263B] bg-[#010b13] mt-auto">
+            <Link href="/dashboard/messages/escrow" className="flex items-center space-x-3 group">
+              <div className="relative shrink-0">
+                <div className="w-9 h-9 bg-[#18263B] rounded-xl flex items-center justify-center text-[#ebf1f5] border border-[#d2dde4]/20">
+                  <ShieldCheck className="w-5 h-5 text-[#ebf1f5]" />
+                </div>
+                <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-[#010b13] rounded-full"></div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[#ebf1f5] font-extrabold text-xs group-hover:text-[#ebf1f5]/80 transition truncate">
+                  Escrow Officer Desk
+                </p>
+                <p className="text-[10px] font-mono text-[#526371] uppercase">Official Support • Online</p>
+              </div>
+            </Link>
+          </div>
         </div>
-      </div>
 
-      {/* 2 & 3. Middle and Right Columns (Children) */}
-      <div className="flex-1 flex gap-4 min-w-0">
-        {children}
-      </div>
+        {/* 2 & 3. Middle and Right Columns (Children) */}
+        <div className="flex-1 flex gap-4 min-w-0 h-full">
+          {children}
+        </div>
 
+      </div>
     </div>
   )
 }

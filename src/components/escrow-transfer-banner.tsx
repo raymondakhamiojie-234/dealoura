@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
+import { useState } from 'react'
 import {
   Copy,
   Check,
@@ -11,20 +10,14 @@ import {
   ArrowRight,
   ShieldCheck,
   FileText,
-  Upload,
   AlertCircle,
   ExternalLink,
   Edit2,
-  Zap,
-  Wallet,
   Coins,
-  QrCode,
-  Sparkles
 } from 'lucide-react'
 import { submitPaymentTransferProof, adminConfirmEscrowDeposit } from '@/app/actions/transactions'
-import { getUserWallet, payEscrowFromWallet } from '@/app/actions/wallet'
 import { ESCROW_BANK_CONFIG } from '@/config/escrow-bank'
-import { ESCROW_CRYPTO_NETWORKS, CryptoNetworkConfig } from '@/config/escrow-crypto'
+import { ESCROW_CRYPTO_NETWORKS } from '@/config/escrow-crypto'
 
 interface PaymentProof {
   payerName: string
@@ -56,25 +49,13 @@ export function EscrowTransferBanner({
   paymentProofUrl,
   isBuyer
 }: EscrowTransferBannerProps) {
-  const [selectedMethod, setSelectedMethod] = useState<'wallet' | 'crypto' | 'wire'>('wallet')
+  // Wallet system is paused per product instructions; wire and crypto are active
+  const [selectedMethod, setSelectedMethod] = useState<'wire' | 'crypto'>('wire')
   const [selectedCryptoNetwork, setSelectedCryptoNetwork] = useState<string>('usdt_trc20')
   const [copiedField, setCopiedField] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isWalletPaying, setIsWalletPaying] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
-  const [walletBalance, setWalletBalance] = useState<number | null>(null)
-
-  // Fetch wallet balance on mount for buyer
-  useEffect(() => {
-    if (isBuyer) {
-      getUserWallet().then(({ wallet }) => {
-        if (wallet) {
-          setWalletBalance(wallet.available_balance)
-        }
-      })
-    }
-  }, [isBuyer])
 
   // Parse existing proof if available
   let existingProof: PaymentProof | null = null
@@ -88,7 +69,6 @@ export function EscrowTransferBanner({
 
   const referenceCode = `DEAL-${transactionId.slice(0, 8).toUpperCase()}`
   const totalAmount = Math.round((agreedPrice + escrowFee) * 100) / 100
-  const hasEnoughWalletBalance = walletBalance !== null && walletBalance >= totalAmount
   const currentCrypto = ESCROW_CRYPTO_NETWORKS[selectedCryptoNetwork] || ESCROW_CRYPTO_NETWORKS.usdt_trc20
 
   // Configurable Escrow Bank Account Details
@@ -110,21 +90,6 @@ export function EscrowTransferBanner({
       }
     } catch {
       // Fallback
-    }
-  }
-
-  const handleWalletPay = async () => {
-    setIsWalletPaying(true)
-    setErrorMsg(null)
-    try {
-      const res = await payEscrowFromWallet(transactionId)
-      if (res?.error) {
-        setErrorMsg(res.error)
-      }
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to pay with wallet')
-    } finally {
-      setIsWalletPaying(false)
     }
   }
 
@@ -156,17 +121,17 @@ export function EscrowTransferBanner({
     const isCryptoProof = existingProof.paymentType === 'crypto' || !!existingProof.txHash
 
     return (
-      <div className="bg-amber-50/70 border-2 border-amber-200 rounded-3xl p-6 sm:p-8 space-y-6">
+      <div className="bg-[#ffffff] border border-[#d2dde4] rounded-2xl p-6 sm:p-8 space-y-6 shadow-xs">
         <div className="flex items-start justify-between flex-wrap gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-amber-100 text-amber-700 rounded-2xl flex items-center justify-center shrink-0">
+            <div className="w-12 h-12 bg-[#010b13] text-[#ebf1f5] rounded-xl flex items-center justify-center shrink-0">
               <Clock className="w-6 h-6 animate-pulse" />
             </div>
             <div>
-              <span className="text-[10px] font-black tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-amber-200/80 text-amber-900">
+              <span className="text-[10px] font-mono font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-[#ebf1f5] text-[#010b13] border border-[#d2dde4]">
                 Deposit Under Verification
               </span>
-              <h3 className="text-xl font-black text-gray-900 mt-1">
+              <h3 className="text-xl font-black text-[#010b13] mt-1">
                 {isCryptoProof ? 'Crypto Transfer Submitted' : 'Bank Transfer Submitted'}
               </h3>
             </div>
@@ -176,7 +141,7 @@ export function EscrowTransferBanner({
             <button
               onClick={() => setIsEditing(true)}
               type="button"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-300 bg-white text-xs font-bold text-amber-900 hover:bg-amber-50 transition shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-[#d2dde4] bg-[#ebf1f5] text-xs font-bold text-[#010b13] hover:bg-[#010b13] hover:text-[#ebf1f5] transition cursor-pointer"
             >
               <Edit2 className="w-3.5 h-3.5" /> Edit Details
             </button>
@@ -184,64 +149,64 @@ export function EscrowTransferBanner({
         </div>
 
         {/* Submitted Data Summary */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-4 rounded-2xl border border-amber-200 text-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-[#ebf1f5] p-4 rounded-xl border border-[#d2dde4] text-xs">
           <div>
-            <span className="text-gray-400 block text-[10px] uppercase font-bold">Payer / Source</span>
-            <span className="font-bold text-gray-800 truncate block">{existingProof.payerName || 'N/A'}</span>
+            <span className="text-[#526371] block text-[10px] uppercase font-bold">Payer / Source</span>
+            <span className="font-bold text-[#010b13] truncate block mt-0.5">{existingProof.payerName || 'N/A'}</span>
           </div>
           <div>
-            <span className="text-gray-400 block text-[10px] uppercase font-bold">Payment Method</span>
-            <span className="font-bold text-gray-800">{existingProof.payerBank || (isCryptoProof ? 'Crypto Vault' : 'Bank Wire')}</span>
+            <span className="text-[#526371] block text-[10px] uppercase font-bold">Payment Method</span>
+            <span className="font-bold text-[#010b13] block mt-0.5">{existingProof.payerBank || (isCryptoProof ? 'Crypto Vault' : 'Bank Wire')}</span>
           </div>
           <div>
-            <span className="text-gray-400 block text-[10px] uppercase font-bold">
+            <span className="text-[#526371] block text-[10px] uppercase font-bold">
               {isCryptoProof ? 'TxID / Reference' : 'Reference Code'}
             </span>
-            <span className="font-mono font-bold text-blue-600 truncate block">
+            <span className="font-mono font-bold text-[#010b13] truncate block mt-0.5">
               {existingProof.txHash || existingProof.referenceCode || referenceCode}
             </span>
           </div>
           <div>
-            <span className="text-gray-400 block text-[10px] uppercase font-bold">Amount Paid</span>
-            <span className="font-black text-emerald-600">${existingProof.amountPaid || totalAmount} USD</span>
+            <span className="text-[#526371] block text-[10px] uppercase font-bold">Amount Paid</span>
+            <span className="font-black text-[#010b13] block mt-0.5">${existingProof.amountPaid || totalAmount} USD</span>
           </div>
         </div>
 
         {isCryptoProof && existingProof.txHash && (
-          <div className="p-3 bg-white rounded-xl border border-amber-200 flex items-center justify-between text-xs">
-            <span className="text-slate-600 font-mono truncate max-w-sm">
+          <div className="p-3 bg-[#ebf1f5] rounded-xl border border-[#d2dde4] flex items-center justify-between text-xs">
+            <span className="text-[#526371] font-mono truncate max-w-sm">
               Blockchain TxID: {existingProof.txHash}
             </span>
             <a
               href={`https://tronscan.org/#/transaction/${existingProof.txHash}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 hover:underline font-bold flex items-center gap-1 shrink-0 ml-2"
+              className="text-[#010b13] underline font-bold flex items-center gap-1 shrink-0 ml-2"
             >
-              Verify on Blockchain Explorer <ExternalLink className="w-3 h-3" />
+              Verify on Explorer <ExternalLink className="w-3 h-3" />
             </a>
           </div>
         )}
 
         {paymentProofUrl && (
-          <div className="flex items-center gap-2 text-xs text-blue-600">
-            <FileText className="w-4 h-4" />
-            <a href={paymentProofUrl} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center gap-1 font-semibold">
+          <div className="flex items-center gap-2 text-xs text-[#010b13]">
+            <FileText className="w-4 h-4 text-[#526371]" />
+            <a href={paymentProofUrl} target="_blank" rel="noopener noreferrer" className="underline flex items-center gap-1 font-semibold">
               View Uploaded Payment Receipt / Screenshot <ExternalLink className="w-3 h-3" />
             </a>
           </div>
         )}
 
-        <div className="bg-amber-100/60 p-4 rounded-xl text-xs text-amber-900 space-y-1">
-          <p className="font-bold">What happens next?</p>
-          <p className="text-amber-800/90 text-[11px] leading-relaxed">
+        <div className="bg-[#ebf1f5] p-4 rounded-xl text-xs text-[#526371] space-y-1 border border-[#d2dde4]">
+          <p className="font-bold text-[#010b13]">What happens next?</p>
+          <p className="text-[11px] leading-relaxed">
             The Dealoura Escrow Desk is reconciling your transfer. Once confirmed, the seller is notified to hand over the credentials to our agent. You will receive an instant notification and email.
           </p>
         </div>
 
         {/* DEVELOPER SIMULATION: Direct 1-Click Approval */}
-        <div className="pt-2 border-t border-amber-200 flex items-center justify-between flex-wrap gap-2">
-          <span className="text-[11px] font-mono text-amber-800 font-semibold">DEVELOPER / ADMIN SIMULATION:</span>
+        <div className="pt-3 border-t border-[#d2dde4] flex items-center justify-between flex-wrap gap-2">
+          <span className="text-[11px] font-mono text-[#526371] font-semibold">DEVELOPER / ADMIN SIMULATION:</span>
           <button
             type="button"
             onClick={async () => {
@@ -249,7 +214,7 @@ export function EscrowTransferBanner({
                 await adminConfirmEscrowDeposit(transactionId)
               }
             }}
-            className="py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
+            className="py-1.5 px-3 bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] font-bold text-xs rounded-lg transition cursor-pointer"
           >
             [Instant Simulation] Approve Escrow Deposit
           </button>
@@ -258,198 +223,75 @@ export function EscrowTransferBanner({
     )
   }
 
-  // 2. DEFAULT VIEW: CHOOSE PAYMENT METHOD (WALLET, CRYPTO, OR WIRE)
+  // 2. DEFAULT VIEW: CHOOSE PAYMENT METHOD (WIRE OR CRYPTO)
   return (
     <div className="space-y-6">
       
-      {/* 3-Option Payment Method Switcher (For Buyer) */}
+      {/* 2-Option Payment Method Switcher (For Buyer) */}
       {isBuyer && (
-        <div className="bg-white rounded-3xl p-4 border border-slate-200 shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="bg-[#ffffff] rounded-2xl p-4 border border-[#d2dde4] shadow-xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-mono font-bold uppercase text-slate-400">Escrow Payment Method:</span>
+            <span className="text-xs font-mono font-bold uppercase text-[#526371]">Escrow Deposit Method:</span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() => setSelectedMethod('wallet')}
-              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
-                selectedMethod === 'wallet'
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
-            >
-              <Zap className="w-3.5 h-3.5 text-amber-300" />
-              <span>Dealoura Wallet (Instant)</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setSelectedMethod('crypto')}
-              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
-                selectedMethod === 'crypto'
-                  ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-              }`}
-            >
-              <Coins className="w-3.5 h-3.5 text-emerald-300" />
-              <span>Crypto Escrow (USDT/USDC)</span>
-            </button>
-            <button
-              type="button"
               onClick={() => setSelectedMethod('wire')}
-              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${
+              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                 selectedMethod === 'wire'
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  ? 'bg-[#010b13] text-[#ebf1f5]'
+                  : 'bg-[#ebf1f5] text-[#010b13] hover:bg-[#d2dde4]'
               }`}
             >
               <Building2 className="w-3.5 h-3.5" />
               <span>Bank Wire Transfer</span>
             </button>
+            <button
+              type="button"
+              onClick={() => setSelectedMethod('crypto')}
+              className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                selectedMethod === 'crypto'
+                  ? 'bg-[#010b13] text-[#ebf1f5]'
+                  : 'bg-[#ebf1f5] text-[#010b13] hover:bg-[#d2dde4]'
+              }`}
+            >
+              <Coins className="w-3.5 h-3.5" />
+              <span>Crypto Escrow (USDT / USDC)</span>
+            </button>
           </div>
         </div>
       )}
 
-      {/* OPTION A: 1-CLICK WALLET BALANCE PAYMENT */}
-      {selectedMethod === 'wallet' && isBuyer ? (
-        <div className="bg-gradient-to-br from-slate-900 via-slate-900 to-blue-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-800 space-y-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-          <div className="flex items-start justify-between flex-wrap gap-4 relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center shrink-0 border border-blue-500/30">
-                <Wallet className="w-6 h-6" />
-              </div>
-              <div>
-                <span className="text-[10px] font-mono font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                  Instant Escrow Clearance
-                </span>
-                <h3 className="text-xl sm:text-2xl font-black text-white mt-1">
-                  Pay from Dealoura Wallet
-                </h3>
-              </div>
-            </div>
-
-            <div className="text-right">
-              <span className="text-[10px] font-mono uppercase text-slate-400 block">Total Escrow Required</span>
-              <span className="text-2xl font-black text-emerald-400 font-mono">${totalAmount.toLocaleString()} USD</span>
-            </div>
-          </div>
-
-          {errorMsg && (
-            <div className="p-3 bg-rose-950/80 border border-rose-500/50 text-rose-300 rounded-xl text-xs">
-              {errorMsg}
-            </div>
-          )}
-
-          {/* Balance Status Box */}
-          <div className="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 space-y-3 relative z-10">
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-400">Your Available Balance:</span>
-              <span className="font-mono font-bold text-base text-white">
-                {walletBalance !== null ? `$${walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD` : 'Checking balance...'}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-400">Order Amount + 5% Escrow Protection:</span>
-              <span className="font-mono font-bold text-slate-300">
-                ${totalAmount.toLocaleString()} USD
-              </span>
-            </div>
-
-            <div className="pt-3 border-t border-slate-800 flex justify-between items-center text-xs">
-              <span className="text-slate-400">Remaining Balance After Escrow:</span>
-              <span className={`font-mono font-bold ${hasEnoughWalletBalance ? 'text-emerald-400' : 'text-rose-400'}`}>
-                {walletBalance !== null
-                  ? `$${(walletBalance - totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD`
-                  : '...'}
-              </span>
-            </div>
-          </div>
-
-          {/* Action Trigger */}
-          <div className="relative z-10">
-            {hasEnoughWalletBalance ? (
-              <button
-                type="button"
-                onClick={handleWalletPay}
-                disabled={isWalletPaying}
-                className="w-full py-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 shadow-lg shadow-blue-500/30 transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-              >
-                {isWalletPaying ? (
-                  <span>Securing Funds in Vault...</span>
-                ) : (
-                  <>
-                    <Zap className="w-4 h-4 text-amber-300" />
-                    <span>Lock ${totalAmount.toLocaleString()} in Escrow with Wallet Balance</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            ) : (
-              <div className="space-y-3">
-                <div className="p-3 bg-amber-950/40 border border-amber-500/40 rounded-xl text-xs text-amber-300 flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
-                  <span>
-                    Insufficient balance. You need ${(totalAmount - (walletBalance || 0)).toLocaleString()} more to pay from your wallet.
-                  </span>
-                </div>
-                <div className="flex gap-3">
-                  <Link
-                    href="/dashboard/wallet"
-                    className="flex-1 py-3 px-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-xs transition text-center"
-                  >
-                    Top Up Wallet Balance &rarr;
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedMethod('crypto')}
-                    className="flex-1 py-3 px-4 bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs rounded-xl transition text-center"
-                  >
-                    Pay with USDT / USDC
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="pt-2 text-[11px] text-slate-400 flex items-center gap-2 relative z-10">
-            <Lock className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
-            <span>100% Escrow Protected: Funds stay locked in the Dealoura Vault until you inspect and approve the channel.</span>
-          </div>
-        </div>
-      ) : selectedMethod === 'crypto' && isBuyer ? (
+      {selectedMethod === 'crypto' && isBuyer ? (
         /* OPTION B: CRYPTO ESCROW DEPOSIT (USDT / USDC) */
         <div className="space-y-6">
-          <div className="bg-gradient-to-br from-slate-950 via-slate-900 to-emerald-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-emerald-800/50 space-y-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
-
-            <div className="flex items-start justify-between flex-wrap gap-4 relative z-10">
+          <div className="bg-[#010b13] text-[#ebf1f5] rounded-2xl p-6 sm:p-8 border border-[#18263B] space-y-6">
+            <div className="flex items-start justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-2xl flex items-center justify-center shrink-0 border border-emerald-500/30">
+                <div className="w-12 h-12 bg-[#18263B] text-[#ebf1f5] rounded-xl flex items-center justify-center shrink-0 border border-[#d2dde4]/20">
                   <Coins className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-mono font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    Low Fee • Global Crypto Escrow
+                  <span className="text-[10px] font-mono font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-[#18263B] text-[#ebf1f5] border border-[#d2dde4]/20">
+                    Segregated Crypto Escrow Vault
                   </span>
-                  <h3 className="text-xl sm:text-2xl font-black text-white mt-1">
+                  <h3 className="text-xl sm:text-2xl font-black text-[#ebf1f5] mt-1">
                     Send Stablecoins to Dealoura Vault
                   </h3>
                 </div>
               </div>
 
               <div className="text-right">
-                <span className="text-[10px] uppercase font-mono text-emerald-300/80 block">Amount Due</span>
-                <span className="text-2xl font-black text-emerald-400 font-mono">
+                <span className="text-[10px] uppercase font-mono text-[#526371] block">Amount Due</span>
+                <span className="text-2xl font-black text-[#ebf1f5] font-mono">
                   {totalAmount.toLocaleString()} {currentCrypto.token}
                 </span>
-                <span className="text-[11px] text-slate-400 block font-mono">($1.00 USD = 1.00 {currentCrypto.token})</span>
+                <span className="text-[11px] text-[#526371] block font-mono">($1.00 USD = 1.00 {currentCrypto.token})</span>
               </div>
             </div>
 
             {/* Network Selector Tabs */}
-            <div className="flex flex-wrap gap-2 pt-2 relative z-10">
+            <div className="flex flex-wrap gap-2 pt-2">
               {Object.values(ESCROW_CRYPTO_NETWORKS).map((net) => (
                 <button
                   key={net.id}
@@ -457,46 +299,46 @@ export function EscrowTransferBanner({
                   onClick={() => setSelectedCryptoNetwork(net.id)}
                   className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer ${
                     selectedCryptoNetwork === net.id
-                      ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20 border border-emerald-400/40'
-                      : 'bg-slate-900/90 text-slate-400 hover:text-white border border-slate-800'
+                      ? 'bg-[#ebf1f5] text-[#010b13]'
+                      : 'bg-[#18263B] text-[#ebf1f5]/80 hover:text-[#ebf1f5]'
                   }`}
                 >
-                  <span className={`w-2 h-2 rounded-full ${net.badgeColor}`}></span>
+                  <span className="w-2 h-2 rounded-full bg-current"></span>
                   <span>{net.name}</span>
-                  <span className="text-[10px] text-slate-300 font-normal">{net.feeEstimate}</span>
+                  <span className="text-[10px] opacity-70 font-normal">{net.feeEstimate}</span>
                 </button>
               ))}
             </div>
 
             {/* Crypto Deposit Box with QR Code & Copy */}
-            <div className="bg-slate-950/90 rounded-2xl p-5 border border-slate-800 space-y-4 relative z-10">
+            <div className="bg-[#18263B]/60 rounded-xl p-5 border border-[#d2dde4]/20 space-y-4">
               <div className="flex flex-col md:flex-row items-center gap-6">
                 
                 {/* QR Code */}
-                <div className="bg-white p-2.5 rounded-2xl shrink-0 shadow-lg">
+                <div className="bg-[#ffffff] p-2.5 rounded-xl shrink-0">
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${currentCrypto.address}`}
                     alt="Deposit QR Code"
-                    className="w-32 h-32 rounded-xl object-contain"
+                    className="w-32 h-32 rounded-lg object-contain"
                   />
                 </div>
 
                 {/* Address Details */}
                 <div className="flex-1 space-y-3 w-full">
                   <div>
-                    <span className="text-[10px] font-mono font-bold uppercase text-slate-400 block mb-1">
+                    <span className="text-[10px] font-mono font-bold uppercase text-[#ebf1f5]/70 block mb-1">
                       Dealoura Custodial Escrow Address ({currentCrypto.network})
                     </span>
-                    <div className="flex items-center gap-2 bg-slate-900 p-3 rounded-xl border border-slate-800 font-mono text-xs text-emerald-300 break-all select-all">
+                    <div className="flex items-center gap-2 bg-[#010b13] p-3 rounded-xl border border-[#d2dde4]/20 font-mono text-xs text-[#ebf1f5] break-all select-all">
                       <span className="flex-1">{currentCrypto.address}</span>
                       <button
                         type="button"
                         onClick={() => handleCopy('crypto_addr', currentCrypto.address)}
-                        className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition shrink-0 cursor-pointer"
+                        className="p-1.5 rounded-lg bg-[#18263B] hover:bg-[#ebf1f5] hover:text-[#010b13] text-[#ebf1f5] transition shrink-0 cursor-pointer"
                         title="Copy Address"
                       >
                         {copiedField === 'crypto_addr' ? (
-                          <Check className="w-4 h-4 text-emerald-400" />
+                          <Check className="w-4 h-4" />
                         ) : (
                           <Copy className="w-4 h-4" />
                         )}
@@ -504,12 +346,12 @@ export function EscrowTransferBanner({
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap items-center justify-between text-xs text-slate-400 gap-2">
-                    <span className="flex items-center gap-1.5 text-emerald-400">
+                  <div className="flex flex-wrap items-center justify-between text-xs text-[#ebf1f5]/70 gap-2">
+                    <span className="flex items-center gap-1.5 text-[#ebf1f5]">
                       <ShieldCheck className="w-4 h-4 shrink-0" />
                       <span>Required Confirmations: {currentCrypto.confirmationsNeeded} blocks</span>
                     </span>
-                    <span className="font-mono text-amber-400 font-semibold text-[11px]">
+                    <span className="font-mono text-[#ebf1f5] font-semibold text-[11px]">
                       Send only {currentCrypto.token} via {currentCrypto.network}
                     </span>
                   </div>
@@ -518,23 +360,23 @@ export function EscrowTransferBanner({
               </div>
             </div>
 
-            <div className="pt-1 text-[11px] text-slate-400 flex items-center gap-2 relative z-10">
-              <Lock className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
-              <span>Funds are automatically reconciled and held safely until the 7-day buyer evaluation ends.</span>
+            <div className="pt-1 text-[11px] text-[#ebf1f5]/70 flex items-center gap-2">
+              <Lock className="w-3.5 h-3.5 shrink-0 text-[#ebf1f5]" />
+              <span>Funds are held safely in custody until the 7-day buyer evaluation ends.</span>
             </div>
           </div>
 
           {/* Crypto Confirmation Form */}
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-xs space-y-5">
+          <div className="bg-[#ffffff] rounded-2xl p-6 sm:p-8 border border-[#d2dde4] shadow-xs space-y-5">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-2xl">
+              <div className="p-2.5 bg-[#ebf1f5] text-[#010b13] rounded-xl border border-[#d2dde4]">
                 <Coins className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="text-lg font-black text-slate-900">
+                <h4 className="text-lg font-black text-[#010b13]">
                   Confirm Crypto Transfer
                 </h4>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-[#526371]">
                   After broadcasting the transaction on your wallet (Binance, TrustWallet, MetaMask, etc.), paste the Transaction Hash (TxID) below.
                 </p>
               </div>
@@ -552,7 +394,7 @@ export function EscrowTransferBanner({
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-bold text-[#010b13] mb-1">
                     Your Name or Handle *
                   </label>
                   <input
@@ -561,12 +403,12 @@ export function EscrowTransferBanner({
                     required
                     placeholder="e.g. Alex M."
                     defaultValue={existingProof?.payerName || ''}
-                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-[#d2dde4] bg-[#ebf1f5]/40 text-[#010b13] focus:border-[#010b13] focus:bg-[#ffffff] outline-none transition"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                  <label className="block text-xs font-bold text-[#010b13] mb-1">
                     Blockchain Transaction Hash (TxID) *
                   </label>
                   <input
@@ -575,13 +417,13 @@ export function EscrowTransferBanner({
                     required
                     placeholder="e.g. 9b7a4c6e... or 0x8f2d..."
                     defaultValue={existingProof?.txHash || existingProof?.referenceCode || ''}
-                    className="w-full px-3.5 py-2.5 text-xs font-mono rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full px-3.5 py-2.5 text-xs font-mono rounded-xl border border-[#d2dde4] bg-[#ebf1f5]/40 text-[#010b13] focus:border-[#010b13] focus:bg-[#ffffff] outline-none transition"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-[#010b13] mb-1">
                   Sender Wallet Address (Optional)
                 </label>
                 <input
@@ -589,21 +431,21 @@ export function EscrowTransferBanner({
                   name="notes"
                   placeholder="Your wallet address that sent the transaction..."
                   defaultValue={existingProof?.notes || ''}
-                  className="w-full px-3.5 py-2.5 text-xs font-mono rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full px-3.5 py-2.5 text-xs font-mono rounded-xl border border-[#d2dde4] bg-[#ebf1f5]/40 text-[#010b13] focus:border-[#010b13] focus:bg-[#ffffff] outline-none transition"
                 />
               </div>
 
               <div className="pt-2 flex items-center justify-between flex-wrap gap-3">
-                <span className="text-xs font-bold text-slate-500">
-                  Amount to Verify: <strong className="text-emerald-600">{totalAmount} {currentCrypto.token}</strong>
+                <span className="text-xs font-bold text-[#526371]">
+                  Amount to Verify: <strong className="text-[#010b13]">{totalAmount} {currentCrypto.token}</strong>
                 </span>
 
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="py-3 px-6 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-emerald-500/20 transition disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+                  className="py-3 px-6 bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] font-extrabold text-xs rounded-xl shadow-xs transition disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                 >
-                  {isSubmitting ? 'Submitting Details...' : 'I Have Sent Crypto — Confirm Escrow Deposit'}
+                  {isSubmitting ? 'Submitting Details...' : 'Confirm Crypto Escrow Deposit'}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -611,32 +453,32 @@ export function EscrowTransferBanner({
           </div>
         </div>
       ) : (
-        /* OPTION C: BANK WIRE TRANSFER DETAILS */
+        /* OPTION A: BANK WIRE TRANSFER DETAILS */
         <div className="space-y-6">
-          <div className="bg-gradient-to-br from-blue-900 via-slate-900 to-indigo-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-blue-800/50 space-y-6">
+          <div className="bg-[#010b13] text-[#ebf1f5] rounded-2xl p-6 sm:p-8 border border-[#18263B] space-y-6">
             <div className="flex items-start justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 bg-blue-500/20 text-blue-400 rounded-2xl flex items-center justify-center shrink-0 border border-blue-400/30">
+                <div className="w-12 h-12 bg-[#18263B] text-[#ebf1f5] rounded-xl flex items-center justify-center shrink-0 border border-[#d2dde4]/20">
                   <Building2 className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="text-[10px] font-black tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-blue-500/30 text-blue-300 border border-blue-400/30">
-                    Official Escrow Custody
+                  <span className="text-[10px] font-black tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-[#18263B] text-[#ebf1f5] border border-[#d2dde4]/20">
+                    Segregated Trust Custody
                   </span>
-                  <h3 className="text-xl sm:text-2xl font-black text-white mt-1">
+                  <h3 className="text-xl sm:text-2xl font-black text-[#ebf1f5] mt-1">
                     Escrow Bank Wire Instructions
                   </h3>
                 </div>
               </div>
 
               <div className="text-right">
-                <span className="text-[10px] uppercase font-bold text-blue-200/80 block">Total Due</span>
-                <span className="text-2xl font-black text-emerald-400 font-mono">${totalAmount.toLocaleString()} USD</span>
+                <span className="text-[10px] uppercase font-bold text-[#526371] block">Total Due</span>
+                <span className="text-2xl font-black text-[#ebf1f5] font-mono">${totalAmount.toLocaleString()} USD</span>
               </div>
             </div>
 
-            <p className="text-xs text-blue-100/80 leading-relaxed max-w-2xl">
-              Transfer funds directly from your bank or online account to Dealoura&apos;s segregated escrow trust account. Once our desk verifies receipt, the seller is instructed to hand over the credentials.
+            <p className="text-xs text-[#ebf1f5]/80 leading-relaxed max-w-2xl">
+              Transfer funds directly from your bank or online service (Wise, Revolut, Chase) to Dealoura&apos;s segregated escrow trust account. Once our desk verifies receipt, the seller is instructed to hand over the credentials.
             </p>
 
             {/* Account Details Grid */}
@@ -644,24 +486,24 @@ export function EscrowTransferBanner({
               {bankDetails.map((item) => (
                 <div
                   key={item.label}
-                  className={`p-3.5 rounded-2xl border transition-all ${
+                  className={`p-3.5 rounded-xl border transition-all ${
                     item.highlight
-                      ? 'bg-blue-600/30 border-blue-400/50 shadow-inner'
-                      : 'bg-white/5 border-white/10 hover:bg-white/10'
+                      ? 'bg-[#18263B] border-[#d2dde4]/30'
+                      : 'bg-[#010b13] border-[#18263B]'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-[11px] font-semibold text-blue-200/90">{item.label}</span>
+                    <span className="text-[11px] font-semibold text-[#ebf1f5]/70">{item.label}</span>
                     <button
                       type="button"
                       onClick={() => handleCopy(item.label, item.copyValue)}
-                      className="inline-flex items-center gap-1 text-[11px] font-bold text-white/80 hover:text-white px-2 py-0.5 rounded-md hover:bg-white/10 transition cursor-pointer"
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-[#ebf1f5]/80 hover:text-[#ebf1f5] px-2 py-0.5 rounded-md hover:bg-[#18263B] transition cursor-pointer"
                       title={`Copy ${item.label}`}
                     >
                       {copiedField === item.label ? (
                         <>
-                          <Check className="w-3 h-3 text-emerald-400" />
-                          <span className="text-emerald-400">Copied</span>
+                          <Check className="w-3 h-3 text-[#ebf1f5]" />
+                          <span className="text-[#ebf1f5]">Copied</span>
                         </>
                       ) : (
                         <>
@@ -671,31 +513,31 @@ export function EscrowTransferBanner({
                       )}
                     </button>
                   </div>
-                  <p className={`font-mono font-bold tracking-tight ${item.highlight ? 'text-base text-white' : 'text-sm text-slate-100'}`}>
+                  <p className={`font-mono font-bold tracking-tight ${item.highlight ? 'text-base text-[#ebf1f5]' : 'text-sm text-[#ebf1f5]'}`}>
                     {item.value}
                   </p>
                 </div>
               ))}
             </div>
 
-            <div className="pt-2 text-[11px] text-blue-200/70 flex items-center gap-2">
-              <Lock className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
+            <div className="pt-2 text-[11px] text-[#ebf1f5]/70 flex items-center gap-2">
+              <Lock className="w-3.5 h-3.5 shrink-0 text-[#ebf1f5]" />
               <span>Funds are held in a segregated client trust account and will never be released to the seller until your 7-day evaluation concludes.</span>
             </div>
           </div>
 
           {/* Payment Confirmation Form (For Buyer) */}
           {isBuyer && (
-            <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-5">
+            <div className="bg-[#ffffff] rounded-2xl p-6 sm:p-8 border border-[#d2dde4] shadow-xs space-y-5">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-blue-50 text-blue-600 rounded-2xl">
+                <div className="p-2.5 bg-[#ebf1f5] text-[#010b13] rounded-xl border border-[#d2dde4]">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-black text-gray-900">
+                  <h4 className="text-lg font-black text-[#010b13]">
                     Confirm Your Transfer Details
                   </h4>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-[#526371]">
                     After completing the bank wire, enter your transfer details below so our escrow desk can verify receipt.
                   </p>
                 </div>
@@ -711,7 +553,7 @@ export function EscrowTransferBanner({
               <form onSubmit={handleSubmitProof} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                    <label className="block text-xs font-bold text-[#010b13] mb-1">
                       Sender Account Holder Name *
                     </label>
                     <input
@@ -720,12 +562,12 @@ export function EscrowTransferBanner({
                       required
                       placeholder="e.g. Alex Morgan"
                       defaultValue={existingProof?.payerName || ''}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-[#d2dde4] bg-[#ebf1f5]/40 text-[#010b13] focus:border-[#010b13] focus:bg-[#ffffff] outline-none transition"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                    <label className="block text-xs font-bold text-[#010b13] mb-1">
                       Sending Bank / Service *
                     </label>
                     <input
@@ -734,14 +576,14 @@ export function EscrowTransferBanner({
                       required
                       placeholder="e.g. Chase, Wise, Revolut, Wire"
                       defaultValue={existingProof?.payerBank || ''}
-                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3.5 py-2.5 text-xs rounded-xl border border-[#d2dde4] bg-[#ebf1f5]/40 text-[#010b13] focus:border-[#010b13] focus:bg-[#ffffff] outline-none transition"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                    <label className="block text-xs font-bold text-[#010b13] mb-1">
                       Transaction Reference / Narration Code *
                     </label>
                     <input
@@ -750,25 +592,25 @@ export function EscrowTransferBanner({
                       required
                       defaultValue={existingProof?.referenceCode || referenceCode}
                       placeholder="e.g. DEAL-XXXX or your bank's TXN ID"
-                      className="w-full px-3.5 py-2.5 text-xs font-mono rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3.5 py-2.5 text-xs font-mono rounded-xl border border-[#d2dde4] bg-[#ebf1f5]/40 text-[#010b13] focus:border-[#010b13] focus:bg-[#ffffff] outline-none transition"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                    <label className="block text-xs font-bold text-[#010b13] mb-1">
                       Upload Transfer Receipt / Screenshot (Optional)
                     </label>
                     <input
                       type="file"
                       name="receipt_file"
                       accept="image/*,.pdf"
-                      className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 text-gray-500 file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-[#d2dde4] bg-[#ebf1f5]/40 text-[#010b13] file:mr-3 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-[#010b13] file:text-[#ebf1f5] hover:file:opacity-90 transition cursor-pointer"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                  <label className="block text-xs font-bold text-[#010b13] mb-1">
                     Additional Notes (Optional)
                   </label>
                   <textarea
@@ -776,13 +618,13 @@ export function EscrowTransferBanner({
                     rows={2}
                     placeholder="Any special reference or timing details for the escrow desk..."
                     defaultValue={existingProof?.notes || ''}
-                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3.5 py-2 text-xs rounded-xl border border-[#d2dde4] bg-[#ebf1f5]/40 text-[#010b13] focus:border-[#010b13] focus:bg-[#ffffff] outline-none transition"
                   />
                 </div>
 
                 <div className="pt-2 flex items-center justify-between flex-wrap gap-3">
-                  <span className="text-xs font-bold text-gray-500">
-                    Amount to Verify: <strong className="text-blue-600">${totalAmount} USD</strong>
+                  <span className="text-xs font-bold text-[#526371]">
+                    Amount to Verify: <strong className="text-[#010b13]">${totalAmount} USD</strong>
                   </span>
 
                   <div className="flex items-center gap-2">
@@ -790,7 +632,7 @@ export function EscrowTransferBanner({
                       <button
                         type="button"
                         onClick={() => setIsEditing(false)}
-                        className="px-4 py-2.5 text-xs font-bold text-gray-600 hover:bg-gray-100 rounded-xl transition cursor-pointer"
+                        className="px-4 py-2.5 text-xs font-bold text-[#526371] hover:bg-[#ebf1f5] rounded-xl transition cursor-pointer"
                       >
                         Cancel
                       </button>
@@ -799,7 +641,7 @@ export function EscrowTransferBanner({
                     <button
                       type="submit"
                       disabled={isSubmitting}
-                      className="py-3 px-6 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+                      className="py-3 px-6 bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] font-extrabold text-xs rounded-xl shadow-xs transition disabled:opacity-50 flex items-center gap-2 cursor-pointer"
                     >
                       {isSubmitting ? 'Submitting Details...' : 'I Have Transferred — Confirm Payment'}
                       <ArrowRight className="w-3.5 h-3.5" />
