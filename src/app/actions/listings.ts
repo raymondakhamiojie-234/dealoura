@@ -33,8 +33,8 @@ export async function createListing(formData: FormData) {
       return { error: 'Your session has expired. Please log in again to list an account.' }
     }
 
-    // Determine status (Save as Draft or Submit for Review)
-    const status = action === 'draft' ? 'draft' : 'pending'
+    // Determine status (Save as Draft or Publish directly to marketplace)
+    const status = action === 'draft' ? 'draft' : 'approved'
 
     // Verify user profile exists to prevent foreign key constraint crashes
     const { data: profile } = await supabase
