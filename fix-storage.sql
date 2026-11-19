@@ -1,6 +1,7 @@
 -- ====================================================================
--- DEALOURA: SUPABASE STORAGE BUCKET INITIALIZATION & ACCESS FIX
+-- DEALOURA: SUPABASE STORAGE BUCKET & OBJECTS POLICIES
 -- Run this in your Supabase Dashboard -> SQL Editor
+-- (ALTER TABLE lines removed to avoid 42501 ownership error)
 -- ====================================================================
 
 -- 1. Create the 'listing-images' public bucket if it does not exist
@@ -25,17 +26,7 @@ VALUES (
 )
 ON CONFLICT (id) DO NOTHING;
 
--- 3. Ensure RLS is active on storage tables
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
-ALTER TABLE storage.buckets ENABLE ROW LEVEL SECURITY;
-
--- 4. BUCKETS POLICY: Allow users and visitors to read public bucket registry
-DROP POLICY IF EXISTS "Public can view buckets" ON storage.buckets;
-CREATE POLICY "Public can view buckets"
-ON storage.buckets FOR SELECT
-USING (true);
-
--- 5. OBJECTS POLICIES FOR listing-images (Safe drop-and-recreate)
+-- 3. OBJECTS POLICIES FOR listing-images (Safe drop-and-recreate)
 DROP POLICY IF EXISTS "Public Access listing-images" ON storage.objects;
 DROP POLICY IF EXISTS "Public can view listing-images" ON storage.objects;
 CREATE POLICY "Public can view listing-images"
@@ -61,7 +52,7 @@ ON storage.objects FOR DELETE
 TO authenticated
 USING (bucket_id = 'listing-images');
 
--- 6. OBJECTS POLICIES FOR verifications (KYC)
+-- 4. OBJECTS POLICIES FOR verifications (KYC)
 DROP POLICY IF EXISTS "Users can upload their own verification evidence" ON storage.objects;
 CREATE POLICY "Users can upload their own verification evidence"
 ON storage.objects FOR INSERT
