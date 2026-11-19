@@ -90,13 +90,14 @@ export default async function SellerProfilePage(props: {
 
   const completedDeals = rpcStats?.completed_deals ?? 0
 
-  let isVerified = rpcStats?.is_verified ?? Boolean(seller.is_verified)
+  const isTrusted = Boolean(seller.is_trusted || (seller.verification_level && seller.verification_level >= 3))
+  let isVerified = Boolean(seller.is_verified || (seller.verification_level && seller.verification_level >= 2) || isTrusted)
   if (!isVerified) {
     const { data: vCheck } = await supabase
       .from('verifications')
-      .select('id')
+      .select('id, verification_type')
       .eq('user_id', seller.id)
-      .eq('status', 'verified')
+      .in('status', ['verified', 'approved'])
       .limit(1)
     if (vCheck && vCheck.length > 0) {
       isVerified = true
@@ -170,14 +171,19 @@ export default async function SellerProfilePage(props: {
 
                 {/* Trust Badges Row */}
                 <div className="flex flex-wrap items-center gap-2 mt-2.5">
-                  {isVerified ? (
+                  {isTrusted ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-amber-400 text-[#010b13] shadow-xs">
+                      <Star className="w-3.5 h-3.5 fill-current" />
+                      Trusted Partner (Level 3)
+                    </span>
+                  ) : isVerified ? (
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#ebf1f5] text-[#010b13] border border-[#d2dde4]">
                       <CheckCircle2 className="w-3.5 h-3.5 text-[#010b13]" />
-                      KYC Verified Merchant
+                      Verified Seller (Level 2)
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-[#ebf1f5] text-[#526371] border border-[#d2dde4]">
-                      Registered Seller
+                      Registered Member
                     </span>
                   )}
 

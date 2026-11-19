@@ -9,7 +9,8 @@ import {
   Tag, 
   ArrowLeft, 
   Lock, 
-  Sparkles
+  Sparkles,
+  Star
 } from 'lucide-react'
 
 export async function generateMetadata(props: { params: Promise<{ id: string }> }) {
@@ -41,7 +42,7 @@ export default async function ListingDetailsPage(props: { params: Promise<{ id: 
     .from('listings')
     .select(`
       *,
-      user_profiles:seller_id (id, username, full_name, avatar_url),
+      user_profiles:seller_id (id, username, full_name, avatar_url, is_verified, verification_level, is_trusted),
       listing_media (id, media_url, display_order)
     `)
     .eq('id', params.id)
@@ -281,28 +282,51 @@ export default async function ListingDetailsPage(props: { params: Promise<{ id: 
                 <h4 className="text-[10px] font-mono font-bold text-[#526371] uppercase tracking-wider mb-3">
                   Seller Profile
                 </h4>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="h-10 w-10 rounded-full bg-[#010b13] text-[#ebf1f5] flex items-center justify-center font-bold text-base">
-                      {listing.user_profiles?.username?.[0]?.toUpperCase() || '?'}
-                    </div>
-                    <div>
+                {(() => {
+                  const sellerProf = listing.user_profiles as any
+                  const isTrusted = Boolean(sellerProf?.is_trusted || (sellerProf?.verification_level && sellerProf.verification_level >= 3))
+                  const isVerified = Boolean(sellerProf?.is_verified || (sellerProf?.verification_level && sellerProf.verification_level >= 2) || isTrusted)
+
+                  return (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className="h-10 w-10 rounded-full bg-[#010b13] text-[#ebf1f5] flex items-center justify-center font-bold text-base">
+                          {listing.user_profiles?.username?.[0]?.toUpperCase() || '?'}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <Link
+                              href={`/seller/${listing.user_profiles?.username}`}
+                              className="font-bold text-sm text-[#010b13] hover:underline transition"
+                            >
+                              @{listing.user_profiles?.username || 'seller'}
+                            </Link>
+                            {isTrusted ? (
+                              <span className="text-[9px] font-mono font-bold uppercase bg-amber-400 text-[#010b13] px-2 py-0.5 rounded-full flex items-center gap-0.5 shadow-2xs">
+                                <Star className="w-2.5 h-2.5 fill-current" />
+                                <span>Trusted</span>
+                              </span>
+                            ) : isVerified ? (
+                              <span className="text-[9px] font-mono font-bold uppercase bg-[#010b13] text-[#ebf1f5] px-2 py-0.5 rounded-full flex items-center gap-0.5 shadow-2xs">
+                                <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" />
+                                <span>Verified</span>
+                              </span>
+                            ) : null}
+                          </div>
+                          <p className="text-[11px] text-[#526371] mt-0.5">
+                            {isTrusted ? 'Level 3 Trusted Partner' : isVerified ? 'Level 2 Verified Seller' : 'Registered Member'}
+                          </p>
+                        </div>
+                      </div>
                       <Link
                         href={`/seller/${listing.user_profiles?.username}`}
-                        className="font-bold text-sm text-[#010b13] hover:underline transition"
+                        className="text-xs font-bold text-[#010b13] hover:underline shrink-0"
                       >
-                        @{listing.user_profiles?.username || 'seller'}
+                        View Store &rarr;
                       </Link>
-                      <p className="text-[11px] text-[#526371]">Dealoura Verified Member</p>
                     </div>
-                  </div>
-                  <Link
-                    href={`/seller/${listing.user_profiles?.username}`}
-                    className="text-xs font-bold text-[#010b13] hover:underline"
-                  >
-                    View Store &rarr;
-                  </Link>
-                </div>
+                  )
+                })()}
               </div>
 
             </div>

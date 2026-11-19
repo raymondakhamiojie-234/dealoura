@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Sparkles, ShieldCheck } from 'lucide-react'
+import { Sparkles, ShieldCheck, Star, CheckCircle2 } from 'lucide-react'
 import { ListingImage } from './listing-image'
 
 export interface ListingItem {
@@ -14,6 +14,9 @@ export interface ListingItem {
   account_handle?: string
   user_profiles?: {
     username?: string
+    is_verified?: boolean
+    is_trusted?: boolean
+    verification_level?: number
   } | null
   listing_media?: {
     media_url: string
@@ -107,8 +110,17 @@ export function ListingCard({ listing }: ListingCardProps) {
           <div className="flex items-center justify-between text-[11px] text-[#526371] font-medium mb-1.5">
             <span className="font-semibold text-[#010b13]">{followersText || listing.niche || 'Audience'}</span>
             {listing.user_profiles?.username && (
-              <span className="text-[#526371] truncate max-w-[100px] font-mono">
-                @{listing.user_profiles.username}
+              <span className="text-[#526371] truncate max-w-[120px] font-mono flex items-center gap-1">
+                <span>@{listing.user_profiles.username}</span>
+                {listing.user_profiles?.is_trusted || (listing.user_profiles?.verification_level && listing.user_profiles.verification_level >= 3) ? (
+                  <span title="Level 3 Trusted Partner">
+                    <Star className="w-2.5 h-2.5 fill-current text-amber-500 shrink-0" />
+                  </span>
+                ) : listing.user_profiles?.is_verified || (listing.user_profiles?.verification_level && listing.user_profiles.verification_level >= 2) ? (
+                  <span title="Level 2 Verified Seller">
+                    <CheckCircle2 className="w-2.5 h-2.5 text-emerald-600 shrink-0" />
+                  </span>
+                ) : null}
               </span>
             )}
           </div>

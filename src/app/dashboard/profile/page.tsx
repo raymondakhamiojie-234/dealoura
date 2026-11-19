@@ -2,7 +2,12 @@ import { createClient } from '@/utils/supabase/server'
 import { updateProfile, changePassword } from '@/app/actions/profile'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { User, ShieldCheck, KeyRound, ExternalLink, Tag } from 'lucide-react'
+import { User, ShieldCheck, KeyRound, ExternalLink, Tag, Star, CheckCircle2, ArrowRight } from 'lucide-react'
+
+export const metadata = {
+  title: 'Profile & Merchant Settings | Dealoura',
+  description: 'Manage your profile details, verification status, and security credentials.',
+}
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -19,8 +24,12 @@ export default async function ProfilePage() {
     .eq('id', user.id)
     .single()
 
+  const verificationLevel = profile?.verification_level || (profile?.is_verified ? 2 : 1)
+  const isTrusted = Boolean(profile?.is_trusted || verificationLevel >= 3)
+  const isVerified = Boolean(profile?.is_verified || verificationLevel >= 2)
+
   return (
-    <div className="min-h-screen bg-[#ebf1f5] py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#ebf1f5] py-8 sm:py-12 px-4 sm:px-6 lg:px-8 text-[#010b13]">
       <div className="max-w-4xl mx-auto space-y-8">
         
         {/* Header */}
@@ -31,9 +40,9 @@ export default async function ProfilePage() {
                 Account Center
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-[#010b13] tracking-tight">Your Profile & Settings</h1>
+            <h1 className="text-2xl sm:text-3xl font-black text-[#010b13] tracking-tight">Your Profile &amp; Settings</h1>
             <p className="text-xs sm:text-sm text-[#526371] mt-1">
-              Manage your marketplace identity, password credentials, and merchant verification.
+              Manage your marketplace identity, password credentials, and merchant verification tiers.
             </p>
           </div>
 
@@ -59,6 +68,58 @@ export default async function ProfilePage() {
               <ShieldCheck className="w-3.5 h-3.5 text-[#ebf1f5]" /> Verify Account
             </Link>
           </div>
+        </div>
+
+        {/* Verification Tier Summary Card */}
+        <div className="bg-[#ffffff] rounded-2xl p-6 sm:p-7 border border-[#d2dde4] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-4">
+            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xs ${
+              isTrusted 
+                ? 'bg-amber-400 text-[#010b13]' 
+                : isVerified 
+                ? 'bg-[#010b13] text-[#ebf1f5]' 
+                : 'bg-[#ebf1f5] text-[#526371] border border-[#d2dde4]'
+            }`}>
+              {isTrusted ? (
+                <Star className="w-6 h-6 fill-current" />
+              ) : isVerified ? (
+                <ShieldCheck className="w-6 h-6 text-emerald-400" />
+              ) : (
+                <CheckCircle2 className="w-6 h-6" />
+              )}
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-[#526371]">
+                  Trust Status:
+                </span>
+                <span className={`text-xs font-mono font-black uppercase px-2.5 py-0.5 rounded-full ${
+                  isTrusted
+                    ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                    : isVerified
+                    ? 'bg-[#010b13] text-[#ebf1f5]'
+                    : 'bg-[#ebf1f5] text-[#010b13] border border-[#d2dde4]'
+                }`}>
+                  {isTrusted ? 'Level 3 — Trusted Partner' : isVerified ? 'Level 2 — Verified Seller' : 'Level 1 — Registered'}
+                </span>
+              </div>
+              <p className="text-xs text-[#526371] mt-1">
+                {isTrusted
+                  ? 'Gold Partner status active. Enjoy priority listing placement and reduced escrow fees.'
+                  : isVerified
+                  ? 'Identity certified. You can now apply for Level 3 Trusted Partner status.'
+                  : 'Complete Level 2 Identity Verification to display the Verified Seller badge.'}
+              </p>
+            </div>
+          </div>
+
+          <Link
+            href="/dashboard/profile/verification"
+            className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-[#ebf1f5] hover:bg-[#d2dde4] text-[#010b13] text-xs font-bold rounded-xl transition border border-[#d2dde4] shrink-0"
+          >
+            <span>Verification Center</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
 
         {/* Profile Information Form */}

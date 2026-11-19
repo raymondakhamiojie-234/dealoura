@@ -43,7 +43,7 @@ export default async function Home(props: {
     .from('listings')
     .select(`
       *,
-      user_profiles:seller_id (username),
+      user_profiles:seller_id (username, is_verified, verification_level, is_trusted),
       listing_media (media_url, display_order)
     `)
     .neq('status', 'draft')
