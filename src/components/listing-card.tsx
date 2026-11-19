@@ -85,6 +85,10 @@ export function ListingCard({ listing }: ListingCardProps) {
               <span className="bg-rose-600 text-white text-[9px] font-mono font-black px-2 py-0.5 rounded shadow-sm uppercase tracking-wider">
                 SOLD
               </span>
+            ) : listing.status === 'pending' ? (
+              <span className="bg-amber-100 text-amber-900 border border-amber-300 text-[9px] font-mono font-bold px-2 py-0.5 rounded shadow-xs uppercase tracking-wider">
+                In Review
+              </span>
             ) : listing.monetized ? (
               <span className="bg-[#010b13] text-[#ebf1f5] text-[9px] font-bold px-2 py-0.5 rounded shadow-sm uppercase tracking-wider flex items-center gap-1 border border-[#ebf1f5]/30">
                 <Sparkles className="w-2.5 h-2.5" />

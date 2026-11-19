@@ -74,7 +74,7 @@ export default async function SellerProfilePage(props: {
       listing_media (media_url, display_order)
     `)
     .eq('seller_id', seller.id)
-    .in('status', ['approved', 'sold'])
+    .neq('status', 'draft')
     .order('created_at', { ascending: false })
 
   // 6. Compute statistics with fallbacks

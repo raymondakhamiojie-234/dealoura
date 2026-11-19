@@ -37,6 +37,7 @@ export async function approveListing(listingId: string) {
 
     revalidatePath('/admin/listings')
     revalidatePath('/admin')
+    revalidatePath('/marketplace')
     revalidatePath('/')
     return { success: true }
   } catch (err: any) {

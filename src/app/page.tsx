@@ -38,7 +38,7 @@ export default async function Home(props: {
   const { q, platform, min_followers, min_price, max_price, monetized, sort } = searchParams
   const supabase = await createClient()
 
-  // Base query for approved and sold listings
+  // Base query for active, pending, and sold listings (all non-drafts)
   let query = supabase
     .from('listings')
     .select(`
@@ -46,7 +46,7 @@ export default async function Home(props: {
       user_profiles:seller_id (username),
       listing_media (media_url, display_order)
     `)
-    .in('status', ['approved', 'sold'])
+    .neq('status', 'draft')
 
   // Apply filters
   if (platform && platform !== 'All') {
