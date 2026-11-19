@@ -47,6 +47,7 @@ export function NewListingForm() {
   const [isMonetized, setIsMonetized] = useState('false')
   const [previews, setPreviews] = useState<{ name: string; url: string }[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formError, setFormError] = useState<string | null>(null)
 
   const numPrice = typeof askingPrice === 'number' ? askingPrice : 0
   const escrowFee = Math.round(numPrice * 0.05 * 100) / 100
@@ -56,8 +57,21 @@ export function NewListingForm() {
     const files = e.target.files
     if (!files) return
 
+    setFormError(null)
+    const fileList = Array.from(files)
+
+    // Check individual file sizes (limit to 4.5MB to ensure safe transmission)
+    for (const file of fileList) {
+      if (file.size > 4.5 * 1024 * 1024) {
+        setFormError(`Image "${file.name}" is ${(file.size / (1024 * 1024)).toFixed(1)}MB. Please select images under 4.5MB for fast upload.`)
+        e.target.value = ''
+        setPreviews([])
+        return
+      }
+    }
+
     const newPreviews: { name: string; url: string }[] = []
-    const selected = Array.from(files).slice(0, 5)
+    const selected = fileList.slice(0, 5)
 
     selected.forEach((file) => {
       newPreviews.push({
@@ -73,14 +87,34 @@ export function NewListingForm() {
     <form 
       action={async (formData: FormData) => {
         setIsSubmitting(true)
-        const res = await createListing(formData)
-        if (res?.error) {
+        setFormError(null)
+        try {
+          const res = await createListing(formData)
+          if (res?.error) {
+            setIsSubmitting(false)
+            setFormError(res.error)
+          } else if (res?.listingId) {
+            window.location.href = `/marketplace/listings/${res.listingId}`
+          }
+        } catch (err: any) {
           setIsSubmitting(false)
-          alert(res.error)
+          setFormError(err.message || 'Server error uploading listing. Please try smaller images or check your connection.')
         }
       }}
       className="space-y-8"
     >
+      {formError && (
+        <div className="p-4 bg-red-50 border-2 border-red-200 rounded-2xl text-xs text-red-800 font-medium flex items-center justify-between gap-3">
+          <span>{formError}</span>
+          <button
+            type="button"
+            onClick={() => setFormError(null)}
+            className="text-red-500 hover:text-red-700 font-bold text-xs"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
       {/* 1. Platform & Handle Selection */}
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#d2dde4] shadow-xs space-y-6">
         <div className="border-b border-[#d2dde4] pb-4">
