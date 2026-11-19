@@ -117,7 +117,7 @@ export default async function ListingDetailsPage(props: { params: Promise<{ id: 
           {/* Left Column: Image Proof Gallery & Description (7 cols) */}
           <div className="lg:col-span-7 space-y-6">
             <div className="bg-white rounded-2xl p-4 sm:p-6 border border-[#d2dde4] shadow-xs">
-              <ListingGallery images={images} />
+              <ListingGallery images={images} platform={listing.platform} title={listing.title} />
             </div>
 
             {/* Detailed Description */}

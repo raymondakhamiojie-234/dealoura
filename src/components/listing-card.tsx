@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Sparkles, ShieldCheck } from 'lucide-react'
+import { ListingImage } from './listing-image'
 
 export interface ListingItem {
   id: string
@@ -60,20 +61,12 @@ export function ListingCard({ listing }: ListingCardProps) {
         
         {/* Image Preview Container (Consistent 4:3 Aspect Ratio) */}
         <div className="w-full aspect-[4/3] bg-[#ebf1f5] relative overflow-hidden flex items-center justify-center border-b border-[#d2dde4]">
-          {mainImage ? (
-            <img
-              src={mainImage}
-              alt={listing.title}
-              className={`w-full h-full object-cover transition-transform duration-500 ${
-                isSold ? 'grayscale-[25%]' : 'group-hover:scale-105'
-              }`}
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center text-center p-4">
-              <span className="text-[#010b13] font-black text-base">{listing.platform || 'Digital Asset'}</span>
-              <span className="text-[11px] font-mono text-[#526371] mt-1">Verified Escrow Listing</span>
-            </div>
-          )}
+          <ListingImage
+            src={mainImage}
+            alt={listing.title}
+            platform={listing.platform}
+            isSold={isSold}
+          />
 
           {/* Top Badges */}
           <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-20 pointer-events-none">
