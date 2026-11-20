@@ -160,22 +160,26 @@ export async function updateVerificationStatus(
     return { error: 'Verification record not found' }
   }
 
-  // 2. Update status in verifications table
+  // 2. Update status in verifications table using valid enum value ('verified' or 'rejected')
+  const isApproved = newStatus === 'approved' || newStatus === 'verified'
+  const dbStatus = isApproved ? 'verified' : newStatus === 'rejected' ? 'rejected' : 'under_review'
+
   const { error: updateErr } = await supabase
     .from('verifications')
     .update({ 
-      status: newStatus,
+      status: dbStatus,
       admin_notes: adminNotes || null,
       updated_at: new Date().toISOString()
     })
     .eq('id', verificationId)
 
-  if (updateErr) return { error: updateErr.message }
+  if (updateErr) {
+    console.error('Error updating verification status in DB:', updateErr)
+    return { error: updateErr.message }
+  }
 
   // 3. If approved, upgrade user's profile verification tier
   if (verif.user_id) {
-    const isApproved = newStatus === 'approved' || newStatus === 'verified'
-    
     if (isApproved) {
       const isL3 = approvedLevel === 3 || verif.verification_type === 'level_3_ownership'
       

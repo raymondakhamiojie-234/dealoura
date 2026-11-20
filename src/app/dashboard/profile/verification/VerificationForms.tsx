@@ -118,11 +118,11 @@ export function VerificationForms({
   }
 
   const isL2Pending = latestL2?.status === 'submitted'
-  const isL2Approved = verificationLevel >= 2 || isVerified || latestL2?.status === 'approved'
+  const isL2Approved = verificationLevel >= 2 || isVerified || latestL2?.status === 'verified' || latestL2?.status === 'approved'
   const isL2Rejected = latestL2?.status === 'rejected'
 
   const isL3Pending = latestL3?.status === 'submitted'
-  const isL3Approved = verificationLevel >= 3 || isTrusted || latestL3?.status === 'approved'
+  const isL3Approved = verificationLevel >= 3 || isTrusted || latestL3?.status === 'verified' || latestL3?.status === 'approved'
   const isL3Rejected = latestL3?.status === 'rejected'
 
   return (

@@ -52,7 +52,7 @@ export function AdminVerificationCard({ item }: { item: AdminVerificationItem })
         ? 'Approved as Level 3 Trusted Partner by Dealoura Compliance.' 
         : 'Approved as Level 2 Verified Seller by Dealoura Compliance.'
       
-      const res = await updateVerificationStatus(item.id, 'approved', notes, level)
+      const res = await updateVerificationStatus(item.id, 'verified', notes, level)
       if (res?.error) {
         setErrorMessage(res.error)
         setProcessing(false)
