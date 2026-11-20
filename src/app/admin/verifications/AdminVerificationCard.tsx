@@ -116,7 +116,7 @@ export function AdminVerificationCard({ item }: { item: AdminVerificationItem })
             )}
           </div>
 
-          <span className="text-[11px] font-mono text-[#526371] block">
+          <span className="text-[11px] font-mono text-[#526371] block" suppressHydrationWarning>
             Submitted: {new Date(item.created_at).toLocaleString()}
           </span>
 

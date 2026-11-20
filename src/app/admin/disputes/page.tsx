@@ -54,7 +54,7 @@ export default async function AdminDisputesPage() {
                     <div className="flex items-center gap-3 text-xs text-[#526371] mt-1">
                       <span>Opened by: <strong className="text-[#010b13]">@{d.opener?.username}</strong></span>
                       <span>•</span>
-                      <span>Date: {new Date(d.created_at).toLocaleDateString()}</span>
+                      <span suppressHydrationWarning>Date: {new Date(d.created_at).toLocaleDateString()}</span>
                     </div>
                   </div>
 

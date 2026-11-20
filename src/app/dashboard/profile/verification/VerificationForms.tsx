@@ -283,7 +283,9 @@ export function VerificationForms({
           }`}>
             <div className="flex items-center justify-between font-bold mb-1">
               <span>Latest Submission Status: {latestL2.status.toUpperCase()}</span>
-              <span className="font-mono text-[11px] opacity-75">{new Date(latestL2.created_at).toLocaleDateString()}</span>
+              <span className="font-mono text-[11px] opacity-75" suppressHydrationWarning>
+                {new Date(latestL2.created_at).toLocaleDateString()}
+              </span>
             </div>
             {latestL2.admin_notes && (
               <p className="mt-1 opacity-90"><span className="font-bold">Compliance Note:</span> {latestL2.admin_notes}</p>
@@ -341,8 +343,8 @@ export function VerificationForms({
                 <p className="text-[#526371] leading-relaxed">
                   Hold your ID document next to your face along with a handwritten note that says:
                 </p>
-                <div className="p-2 rounded-lg bg-white border border-[#d2dde4] font-mono font-bold text-center text-xs text-[#010b13]">
-                  &ldquo;Dealoura — {new Date().toLocaleDateString()} — @{username}&rdquo;
+                <div className="p-2 rounded-lg bg-white border border-[#d2dde4] font-mono font-bold text-center text-xs text-[#010b13]" suppressHydrationWarning>
+                  &ldquo;Dealoura — {new Date().toISOString().split('T')[0]} — @{username}&rdquo;
                 </div>
               </div>
 

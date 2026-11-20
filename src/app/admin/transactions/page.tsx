@@ -73,7 +73,7 @@ export default async function AdminTransactionsPage() {
                         <span>Price: <strong className="font-mono text-[#010b13]">${tx.agreed_price}</strong></span>
                         <span>Buyer: <strong className="text-[#010b13]">@{tx.buyer?.username}</strong></span>
                         <span>Seller: <strong className="text-[#010b13]">@{tx.seller?.username}</strong></span>
-                        <span>Created: {new Date(tx.created_at).toLocaleDateString()}</span>
+                        <span suppressHydrationWarning>Created: {new Date(tx.created_at).toLocaleDateString()}</span>
                       </div>
 
                       <div className="flex items-center gap-2 pt-1">
