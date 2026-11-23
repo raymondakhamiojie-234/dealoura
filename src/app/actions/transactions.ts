@@ -416,7 +416,7 @@ export async function updateTransactionState(transactionId: string, newState: st
     .from('transactions')
     .select(`
       *,
-      listings(title),
+      listings(title, platform),
       buyer:buyer_id(email, username),
       seller:seller_id(email, username)
     `)
@@ -430,12 +430,20 @@ export async function updateTransactionState(transactionId: string, newState: st
   const buyerName = (tx.buyer as any)?.username || 'Buyer'
   const sellerName = (tx.seller as any)?.username || 'Seller'
 
-  // If entering 7-day evaluation, set timestamps and alert buyer
+  // If entering evaluation period, dynamically check platform:
+  // YouTube = 7 Days (10,080 minutes) due to Google Brand Account primary transfer rules
+  // Other platforms (TikTok, Instagram, Facebook, X, etc.) = 15 Minutes for rapid inspection
   if (newState === 'buyer_7_day_evaluation') {
+    const isYouTube = tx.listings?.platform?.toLowerCase().includes('youtube')
+    const durationMinutes = isYouTube ? 7 * 24 * 60 : 15
+    const durationMs = durationMinutes * 60 * 1000
+
     const startedAt = new Date().toISOString()
-    const endsAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+    const endsAt = new Date(Date.now() + durationMs).toISOString()
+    
     updatePayload.evaluation_started_at = startedAt
     updatePayload.evaluation_ends_at = endsAt
+    updatePayload.hold_duration_minutes = durationMinutes
 
     try {
       const emailHtml = renderEvaluationCountdownStartedEmail({
@@ -445,10 +453,18 @@ export async function updateTransactionState(transactionId: string, newState: st
         transactionId: tx.id
       })
 
+      const holdTitle = isYouTube 
+        ? `7-Day YouTube Transfer Hold Active: "${listingTitle}"`
+        : `15-Minute Inspection Hold Active: "${listingTitle}"`
+      
+      const holdMsg = isYouTube
+        ? `Account credentials verified. Your 7-day YouTube Brand Account ownership transfer window has started.`
+        : `Account credentials verified. Your 15-minute credential & 2FA inspection window has started.`
+
       await createNotification(
         tx.buyer_id,
-        `7-Day Inspection Active: "${listingTitle}"`,
-        `Account credentials have been verified by the agent. Your 7-day inspection period has started.`,
+        holdTitle,
+        holdMsg,
         `/dashboard/transactions/${tx.id}`,
         'transaction',
         emailHtml
@@ -546,5 +562,261 @@ export async function updateTransactionState(transactionId: string, newState: st
   if (error) return { error: error.message }
 
   revalidatePath(`/dashboard/transactions/${transactionId}`)
+  return { success: true }
+}
+
+/**
+ * Buyer Early Acceptance:
+ * Buyer inspects the account, changes password/2FA, and authorizes early escrow release to seller.
+ */
+export async function buyerAcceptAndRelease(transactionId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated. Please log in.' }
+
+  const { data: tx, error: fetchErr } = await supabase
+    .from('transactions')
+    .select('id, buyer_id, seller_id, status, listings(title)')
+    .eq('id', transactionId)
+    .single()
+
+  if (fetchErr || !tx) return { error: 'Transaction not found' }
+  if (tx.buyer_id !== user.id) return { error: 'Only the authorized buyer can accept this transaction.' }
+  if (tx.status !== 'buyer_7_day_evaluation') {
+    return { error: 'Transaction is not in the evaluation phase.' }
+  }
+
+  // Advance state to completed
+  const res = await updateTransactionState(transactionId, 'completed')
+  if (res?.error) return res
+
+  // Log timeline
+  await supabase.from('transaction_timeline').insert({
+    transaction_id: transactionId,
+    status: 'completed',
+    description: 'Buyer completed inspection and authorized early escrow payout to seller.'
+  })
+
+  revalidatePath(`/dashboard/transactions/${transactionId}`)
+  revalidatePath('/dashboard/transactions')
+  return { success: true }
+}
+
+/**
+ * Buyer Opens Dispute:
+ * Freezes transaction, registers formal claim, and alerts compliance officer.
+ */
+export async function buyerOpenDispute(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated. Please log in.' }
+
+  const transactionId = formData.get('transactionId') as string
+  const category = (formData.get('category') as string) || 'other'
+  const reasonText = (formData.get('reason') as string)?.trim()
+  const evidenceFile = formData.get('evidence') as File
+
+  if (!transactionId || !reasonText) {
+    return { error: 'Please provide a detailed reason for opening this dispute.' }
+  }
+
+  const { data: tx } = await supabase
+    .from('transactions')
+    .select('id, buyer_id, seller_id, status, listings(title)')
+    .eq('id', transactionId)
+    .single()
+
+  if (!tx) return { error: 'Transaction not found' }
+  if (tx.buyer_id !== user.id) return { error: 'Only the buyer can open a dispute ticket on this deal.' }
+
+  let evidenceUrl: string | null = null
+  if (evidenceFile && evidenceFile.size > 0) {
+    try {
+      const ext = evidenceFile.name?.split('.').pop() || 'jpg'
+      const filePath = `disputes/${transactionId}/${Date.now()}.${ext}`
+      const { data: uploadData } = await supabase.storage
+        .from('listing-images')
+        .upload(filePath, evidenceFile, { upsert: true })
+
+      if (uploadData) {
+        const { data: { publicUrl } } = supabase.storage.from('listing-images').getPublicUrl(filePath)
+        evidenceUrl = publicUrl
+      }
+    } catch (uploadErr) {
+      console.warn('Dispute evidence upload warning:', uploadErr)
+    }
+  }
+
+  const fullReason = `[${category.toUpperCase().replace(/_/g, ' ')}] ${reasonText}`
+
+  // 1. Insert dispute record
+  const { error: disputeErr } = await supabase
+    .from('disputes')
+    .insert({
+      transaction_id: transactionId,
+      opened_by: user.id,
+      reason: fullReason,
+      evidence_url: evidenceUrl,
+      status: 'open'
+    })
+
+  if (disputeErr) return { error: disputeErr.message }
+
+  // 2. Update transaction status to disputed
+  await supabase
+    .from('transactions')
+    .update({ status: 'disputed' })
+    .eq('id', transactionId)
+
+  // 3. Add timeline entry
+  await supabase.from('transaction_timeline').insert({
+    transaction_id: transactionId,
+    status: 'disputed',
+    description: `Escrow dispute opened by buyer: ${reasonText.slice(0, 80)}...`
+  })
+
+  // 4. Alert Seller & Admin
+  await createNotification(
+    tx.seller_id,
+    `Dispute Opened: "${(tx.listings as any)?.title || 'Account'}"`,
+    `The buyer has reported an issue and opened an escrow dispute ticket. An Escrow Officer is reviewing the case.`,
+    `/dashboard/transactions/${transactionId}`,
+    'transaction'
+  )
+
+  revalidatePath(`/dashboard/transactions/${transactionId}`)
+  revalidatePath('/dashboard/transactions')
+  revalidatePath('/admin/disputes')
+  return { success: true }
+}
+
+/**
+ * Seller Submits Payout Destination (Crypto USDT or Bank Wire)
+ */
+export async function submitSellerPayoutDetails(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated. Please log in.' }
+
+  const transactionId = formData.get('transactionId') as string
+  const payoutMethod = formData.get('payoutMethod') as string
+
+  if (!transactionId || !payoutMethod) {
+    return { error: 'Missing required payout fields.' }
+  }
+
+  const { data: tx } = await supabase
+    .from('transactions')
+    .select('id, seller_id, status, agreed_price')
+    .eq('id', transactionId)
+    .single()
+
+  if (!tx) return { error: 'Transaction not found.' }
+  if (tx.seller_id !== user.id) {
+    return { error: 'Only the seller can provide settlement destination details.' }
+  }
+
+  let details: any = {}
+  if (payoutMethod === 'crypto_usdt') {
+    const network = formData.get('network') as string
+    const address = (formData.get('address') as string)?.trim()
+    if (!address) return { error: 'Receiving USDT wallet address is required.' }
+    details = { network, address }
+  } else {
+    const account_name = (formData.get('account_name') as string)?.trim()
+    const bank_name = (formData.get('bank_name') as string)?.trim()
+    const account_number = (formData.get('account_number') as string)?.trim()
+    const routing_swift = (formData.get('routing_swift') as string)?.trim() || ''
+    const country = (formData.get('country') as string)?.trim() || ''
+
+    if (!account_name || !bank_name || !account_number) {
+      return { error: 'Account name, bank name, and account/IBAN number are required.' }
+    }
+    details = { account_name, bank_name, account_number, routing_swift, country }
+  }
+
+  const { error: updateErr } = await supabase
+    .from('transactions')
+    .update({
+      seller_payout_method: payoutMethod,
+      seller_payout_details: details,
+      payout_status: 'pending'
+    })
+    .eq('id', transactionId)
+
+  if (updateErr) return { error: updateErr.message }
+
+  // Add timeline entry
+  await supabase.from('transaction_timeline').insert({
+    transaction_id: transactionId,
+    status: tx.status,
+    description: `Seller registered ${payoutMethod === 'crypto_usdt' ? 'Crypto USDT' : 'Bank Wire'} settlement destination.`
+  })
+
+  revalidatePath(`/dashboard/transactions/${transactionId}`)
+  revalidatePath('/admin/transactions')
+  return { success: true }
+}
+
+/**
+ * Admin Disburses Seller Payout:
+ * Records the blockchain TxHash or Bank Wire reference and completes disbursement.
+ */
+export async function adminDisburseSellerPayout(transactionId: string, txHashOrRef: string, notes?: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  // Check admin
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') {
+    return { error: 'Unauthorized: Admin privileges required.' }
+  }
+
+  const { data: tx } = await supabase
+    .from('transactions')
+    .select('id, seller_id, agreed_price, escrow_fee, listings(title)')
+    .eq('id', transactionId)
+    .single()
+
+  if (!tx) return { error: 'Transaction not found' }
+
+  const escrowFee = tx.escrow_fee || Math.round(tx.agreed_price * 0.05 * 100) / 100
+  const netAmount = Math.max(0, tx.agreed_price - escrowFee)
+
+  const { error: updateErr } = await supabase
+    .from('transactions')
+    .update({
+      payout_status: 'completed',
+      payout_tx_hash: txHashOrRef.trim(),
+      payout_sent_at: new Date().toISOString()
+    })
+    .eq('id', transactionId)
+
+  if (updateErr) return { error: updateErr.message }
+
+  // Timeline
+  await supabase.from('transaction_timeline').insert({
+    transaction_id: transactionId,
+    status: 'completed',
+    description: `Escrow Desk disbursed seller proceeds of $${netAmount}. Ref: ${txHashOrRef.trim()}`
+  })
+
+  // Alert Seller
+  await createNotification(
+    tx.seller_id,
+    `Payout Sent: $${netAmount} USD`,
+    `Dealoura Escrow Desk has disbursed your earnings for "${(tx.listings as any)?.title || 'Account'}". Reference/TxHash: ${txHashOrRef.trim()}`,
+    `/dashboard/transactions/${transactionId}`,
+    'transaction'
+  )
+
+  revalidatePath(`/dashboard/transactions/${transactionId}`)
+  revalidatePath('/admin/transactions')
   return { success: true }
 }

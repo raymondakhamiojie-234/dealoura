@@ -3,6 +3,7 @@ import { adminAdvanceEscrow } from '@/app/actions/admin'
 import { adminConfirmEscrowDeposit } from '@/app/actions/transactions'
 import Link from 'next/link'
 import { CheckCircle2, Clock, ShieldCheck, ExternalLink, ArrowRight } from 'lucide-react'
+import { AdminPayoutDialog } from './AdminPayoutDialog'
 
 export default async function AdminTransactionsPage() {
   const supabase = await createClient()
@@ -13,9 +14,16 @@ export default async function AdminTransactionsPage() {
     .select(`
       id,
       agreed_price,
+      escrow_fee,
       status,
       payment_proof_data,
       payment_proof_url,
+      seller_payout_method,
+      seller_payout_details,
+      payout_status,
+      payout_tx_hash,
+      payout_sent_at,
+      hold_duration_minutes,
       created_at,
       listings (title, platform, price),
       buyer:buyer_id (username),
@@ -143,14 +151,16 @@ export default async function AdminTransactionsPage() {
                         </form>
                       )}
 
-                      {/* Stage 3: Start 7-day hold */}
+                      {/* Stage 3: Start inspection hold (YouTube 7d vs Other 15m) */}
                       {status === 'agent_verifying' && (
                         <form action={adminAdvanceEscrow.bind(null, tx.id, 'buyer_7_day_evaluation') as any}>
                           <button
                             type="submit"
                             className="text-xs font-bold bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] py-2 px-3.5 rounded-xl transition cursor-pointer"
                           >
-                            Verify & Start Buyer 7-Day Hold
+                            {tx.listings?.platform?.toLowerCase().includes('youtube')
+                              ? 'Verify & Start 7-Day YouTube Hold'
+                              : 'Verify & Start 15-Minute Hold'}
                           </button>
                         </form>
                       )}
@@ -168,9 +178,21 @@ export default async function AdminTransactionsPage() {
                       )}
 
                       {status === 'completed' && (
-                        <span className="text-xs font-mono font-bold text-[#010b13] bg-[#ebf1f5] px-3 py-1.5 rounded-xl border border-[#d2dde4] inline-flex items-center">
-                          <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> Deal Completed
-                        </span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-xs font-mono font-bold text-[#010b13] bg-[#ebf1f5] px-3 py-1.5 rounded-xl border border-[#d2dde4] inline-flex items-center">
+                            <CheckCircle2 className="w-3.5 h-3.5 mr-1 text-emerald-600" /> Completed
+                          </span>
+                          <AdminPayoutDialog
+                            transactionId={tx.id}
+                            agreedPrice={tx.agreed_price}
+                            escrowFee={tx.escrow_fee}
+                            sellerPayoutMethod={tx.seller_payout_method}
+                            sellerPayoutDetails={tx.seller_payout_details}
+                            payoutStatus={tx.payout_status}
+                            payoutTxHash={tx.payout_tx_hash}
+                            sellerUsername={tx.seller?.username}
+                          />
+                        </div>
                       )}
 
                       <Link

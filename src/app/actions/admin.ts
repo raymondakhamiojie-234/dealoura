@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createClient } from '@/utils/supabase/server'
+import { updateTransactionState, adminDisburseSellerPayout } from './transactions'
 
 async function assertAdmin() {
   const supabase = await createClient()
@@ -66,19 +67,34 @@ export async function rejectListing(listingId: string) {
 
 export async function adminAdvanceEscrow(transactionId: string, nextStatus: string) {
   try {
-    const { supabase } = await assertAdmin()
+    await assertAdmin()
 
-    const { error } = await supabase
-      .from('transactions')
-      .update({ status: nextStatus })
-      .eq('id', transactionId)
-
-    if (error) return { error: error.message }
+    // Use updateTransactionState so platform-specific hold durations (YouTube 7d vs Other 15m),
+    // notifications, and emails execute cleanly
+    const res = await updateTransactionState(transactionId, nextStatus)
+    if (res?.error) return res
 
     revalidatePath('/admin/transactions')
     revalidatePath('/admin')
     revalidatePath(`/dashboard/transactions/${transactionId}`)
     return { success: true }
+  } catch (err: any) {
+    return { error: err.message || 'Unauthorized' }
+  }
+}
+
+export async function adminDisburseSellerPayoutAction(formData: FormData) {
+  try {
+    await assertAdmin()
+    const transactionId = formData.get('transactionId') as string
+    const txHashOrRef = (formData.get('txHashOrRef') as string)?.trim()
+    const notes = (formData.get('notes') as string)?.trim()
+
+    if (!transactionId || !txHashOrRef) {
+      return { error: 'Transaction ID and TxHash/Reference are required.' }
+    }
+
+    return await adminDisburseSellerPayout(transactionId, txHashOrRef, notes)
   } catch (err: any) {
     return { error: err.message || 'Unauthorized' }
   }

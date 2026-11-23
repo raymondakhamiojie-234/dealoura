@@ -15,6 +15,8 @@ import {
 import { EvaluationCountdown } from '@/components/evaluation-countdown'
 import { EscrowCredentialVault } from '@/components/escrow-credential-vault'
 import { EscrowTransferBanner } from '@/components/escrow-transfer-banner'
+import { BuyerEvaluationActions } from '@/components/buyer-evaluation-actions'
+import { SellerPayoutCard } from '@/components/seller-payout-card'
 
 export default async function TransactionTrackerPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params
@@ -61,12 +63,14 @@ export default async function TransactionTrackerPage(props: { params: Promise<{ 
 
   const hasReviewed = !!existingReview
 
-  // 5-Phase Escrow Steps
+  const isYouTube = tx.listings?.platform?.toLowerCase().includes('youtube')
+
+  // 5-Phase Escrow Steps (YouTube: 7 Days, Other Platforms: 15 Minutes)
   const PHASES = [
     { key: 'pending_payment', label: '1. Deposit' },
     { key: 'payment_confirmed', label: '2. Credentials' },
     { key: 'agent_verifying', label: '3. Agent Check' },
-    { key: 'buyer_7_day_evaluation', label: '4. 7-Day Hold' },
+    { key: 'buyer_7_day_evaluation', label: isYouTube ? '4. 7-Day Hold' : '4. 15-Min Hold' },
     { key: 'completed', label: '5. Payout' },
   ]
 
@@ -240,33 +244,42 @@ export default async function TransactionTrackerPage(props: { params: Promise<{ 
                         type="submit"
                         className="py-2.5 px-5 bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
                       >
-                        [Agent] Verify & Start Buyer 7-Day Hold
+                        {isYouTube ? '[Agent] Verify & Start 7-Day YouTube Hold' : '[Agent] Verify & Start 15-Minute Hold'}
                       </button>
                     </form>
                   </div>
                 </div>
               )}
 
-              {/* ACTION STAGE 4: 7-DAY BUYER EVALUATION */}
+              {/* ACTION STAGE 4: PRODUCTION EVALUATION HOLD (7-Day YouTube vs 15-Min other platforms) */}
               {tx.status === 'buyer_7_day_evaluation' && (
-                <div className="space-y-4">
-                  <EvaluationCountdown
-                    endsAt={tx.evaluation_ends_at}
-                    startedAt={tx.evaluation_started_at}
-                  />
+                <BuyerEvaluationActions
+                  transactionId={tx.id}
+                  isBuyer={isBuyer}
+                  agreedPrice={tx.agreed_price}
+                  platform={tx.listings?.platform}
+                  endsAt={tx.evaluation_ends_at}
+                  startedAt={tx.evaluation_started_at}
+                  holdDurationMinutes={tx.hold_duration_minutes}
+                  sellerPayoutStatus={tx.payout_status}
+                />
+              )}
 
-                  {/* Simulation for 7 Days Passing */}
-                  <div className="bg-[#ebf1f5] border border-[#d2dde4] rounded-xl p-4 text-center">
-                    <p className="text-[11px] font-mono text-[#526371] mb-2">DEVELOPER TESTING SIMULATION:</p>
-                    <form action={updateTransactionState.bind(null, tx.id, 'completed') as any}>
-                      <button
-                        type="submit"
-                        className="py-2 px-5 bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] font-bold text-xs rounded-lg transition cursor-pointer"
-                      >
-                        Simulate 7 Days Concluding (Release Payout)
-                      </button>
-                    </form>
+              {/* ACTION STAGE: DISPUTED */}
+              {tx.status === 'disputed' && (
+                <div className="bg-red-50 border border-red-200 rounded-2xl p-6 sm:p-7 text-red-950 space-y-3 shadow-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0">
+                      <AlertTriangle className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-base font-black text-red-900">Escrow Deal in Formal Dispute</h4>
+                      <p className="text-xs text-red-700">All funds and credentials are frozen pending arbitration</p>
+                    </div>
                   </div>
+                  <p className="text-xs text-red-800 leading-relaxed">
+                    A dispute ticket has been registered on this transaction. A Dealoura Senior Compliance Officer is reviewing the chat logs, credentials, and submitted evidence. Neither party can release funds or transfer ownership until an arbitration verdict is issued.
+                  </p>
                 </div>
               )}
 
@@ -341,6 +354,21 @@ export default async function TransactionTrackerPage(props: { params: Promise<{ 
                     </div>
                   )}
                 </div>
+              )}
+
+              {/* SELLER PAYOUT DESTINATION CARD (Visible to Seller or on Completion) */}
+              {(!isBuyer || tx.status === 'completed') && (
+                <SellerPayoutCard
+                  transactionId={tx.id}
+                  agreedPrice={tx.agreed_price}
+                  escrowFee={tx.escrow_fee}
+                  payoutStatus={tx.payout_status}
+                  payoutMethod={tx.seller_payout_method}
+                  payoutDetails={tx.seller_payout_details}
+                  payoutTxHash={tx.payout_tx_hash}
+                  payoutSentAt={tx.payout_sent_at}
+                  isDealCompleted={tx.status === 'completed'}
+                />
               )}
 
               {/* ACTION STAGE: DISPUTED */}
