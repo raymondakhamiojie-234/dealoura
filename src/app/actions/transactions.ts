@@ -226,7 +226,8 @@ export async function processMockPayment(transactionId: string) {
   try {
     const sellerUsername = (tx.seller as any)?.username || 'Seller'
     const buyerUsername = (tx.buyer as any)?.username || 'Buyer'
-    const listingTitle = tx.listings?.title || 'Account'
+    const listingData = Array.isArray(tx.listings) ? tx.listings[0] : tx.listings
+    const listingTitle = listingData?.title || 'Account'
 
     const emailHtml = renderEscrowDepositEmail({
       sellerName: sellerUsername,
@@ -350,7 +351,8 @@ export async function submitPaymentTransferProof(formData: FormData) {
 
   // Notify seller of transfer submission
   try {
-    const listingTitle = tx.listings?.title || 'Account'
+    const listingData = Array.isArray(tx.listings) ? tx.listings[0] : tx.listings
+    const listingTitle = listingData?.title || 'Account'
     await createNotification(
       tx.seller_id,
       `Buyer Submitted Transfer Proof: "${listingTitle}"`,
@@ -411,7 +413,8 @@ export async function adminConfirmEscrowDeposit(transactionId: string) {
     .update({ status: 'succeeded' })
     .eq('transaction_id', transactionId)
 
-  const listingTitle = (tx.listings as any)?.title || 'Account'
+  const listingData = Array.isArray(tx.listings) ? tx.listings[0] : tx.listings
+  const listingTitle = listingData?.title || 'Account'
   const sellerUsername = (tx.seller as any)?.username || 'Seller'
   const buyerUsername = (tx.buyer as any)?.username || 'Buyer'
 
@@ -506,7 +509,8 @@ export async function submitAccountCredentials(formData: FormData) {
   // Notify buyer that credentials were submitted to the agent
   try {
     const buyerName = (tx.buyer as any)?.username || 'Buyer'
-    const listingTitle = tx.listings?.title || 'Account'
+    const listingData = Array.isArray(tx.listings) ? tx.listings[0] : tx.listings
+    const listingTitle = listingData?.title || 'Account'
 
     const emailHtml = renderCredentialsSubmittedEmail({
       recipientName: buyerName,
@@ -536,6 +540,17 @@ export async function updateTransactionState(transactionId: string, newState: st
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
+  // Check admin authorization
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') {
+    return { error: 'Unauthorized: Administrator privileges required to advance escrow states.' }
+  }
+
   // Fetch transaction with buyer & seller details
   const { data: tx } = await supabase
     .from('transactions')
@@ -551,7 +566,9 @@ export async function updateTransactionState(transactionId: string, newState: st
   if (!tx) return { error: 'Transaction not found' }
 
   const updatePayload: Record<string, any> = { status: newState }
-  const listingTitle = tx.listings?.title || 'Account'
+  const listingData = Array.isArray(tx.listings) ? tx.listings[0] : tx.listings
+  const listingTitle = listingData?.title || 'Account'
+  const isYouTube = Boolean(listingData?.platform?.toLowerCase()?.includes('youtube'))
   const buyerName = (tx.buyer as any)?.username || 'Buyer'
   const sellerName = (tx.seller as any)?.username || 'Seller'
 
@@ -559,7 +576,6 @@ export async function updateTransactionState(transactionId: string, newState: st
   // YouTube = 7 Days (10,080 minutes) due to Google Brand Account primary transfer rules
   // Other platforms (TikTok, Instagram, Facebook, X, etc.) = 15 Minutes for rapid inspection
   if (newState === 'buyer_7_day_evaluation') {
-    const isYouTube = tx.listings?.platform?.toLowerCase().includes('youtube')
     const durationMinutes = isYouTube ? 7 * 24 * 60 : 15
     const durationMs = durationMinutes * 60 * 1000
 
@@ -599,8 +615,9 @@ export async function updateTransactionState(transactionId: string, newState: st
     }
   }
 
-  // If completed, email seller & buyer and release funds to seller wallet
+  // If completed, update payout_status to pending, email seller & buyer, and release funds
   if (newState === 'completed') {
+    updatePayload.payout_status = tx.payout_status === 'completed' ? 'completed' : 'pending'
     // 1. Credit seller's internal wallet
     try {
       const { data: rpcRes, error: rpcErr } = await supabase.rpc('wallet_release_escrow', {
@@ -801,9 +818,11 @@ export async function buyerOpenDispute(formData: FormData) {
   })
 
   // 4. Alert Seller & Admin
+  const listingData = Array.isArray(tx.listings) ? tx.listings[0] : tx.listings
+  const listingTitle = listingData?.title || 'Account'
   await createNotification(
     tx.seller_id,
-    `Dispute Opened: "${(tx.listings as any)?.title || 'Account'}"`,
+    `Dispute Opened: "${listingTitle}"`,
     `The buyer has reported an issue and opened an escrow dispute ticket. An Escrow Officer is reviewing the case.`,
     `/dashboard/transactions/${transactionId}`,
     'transaction'
@@ -933,10 +952,12 @@ export async function adminDisburseSellerPayout(transactionId: string, txHashOrR
   })
 
   // Alert Seller
+  const listingData = Array.isArray(tx.listings) ? tx.listings[0] : tx.listings
+  const listingTitle = listingData?.title || 'Account'
   await createNotification(
     tx.seller_id,
     `Payout Sent: $${netAmount} USD`,
-    `Dealoura Escrow Desk has disbursed your earnings for "${(tx.listings as any)?.title || 'Account'}". Reference/TxHash: ${txHashOrRef.trim()}`,
+    `Dealoura Escrow Desk has disbursed your earnings for "${listingTitle}". Reference/TxHash: ${txHashOrRef.trim()}`,
     `/dashboard/transactions/${transactionId}`,
     'transaction'
   )
@@ -1010,7 +1031,8 @@ export async function autoReleaseExpiredTransaction(transactionId: string) {
     description: 'Evaluation hold period concluded with zero disputes reported. Dealoura Escrow has automatically finalized the transfer and released funds to the seller payout queue.'
   })
 
-  const listingTitle = (tx.listings as any)?.title || 'Account'
+  const listingData = Array.isArray(tx.listings) ? tx.listings[0] : tx.listings
+  const listingTitle = listingData?.title || 'Account'
   const escrowFee = tx.escrow_fee || Math.round(tx.agreed_price * 0.05 * 100) / 100
   const netEarnings = Math.max(0, tx.agreed_price - escrowFee)
 

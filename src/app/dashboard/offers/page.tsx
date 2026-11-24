@@ -67,6 +67,7 @@ export default async function OffersDashboard() {
             offers.map((offer) => {
               const isBuyer = offer.buyer_id === user.id
               const isPending = offer.status === 'pending' || offer.status === 'countered'
+              const listing = Array.isArray(offer.listings) ? offer.listings[0] : offer.listings
 
               return (
                 <div
@@ -76,7 +77,7 @@ export default async function OffersDashboard() {
                   <div className="space-y-3 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-[#ebf1f5] text-[#010b13] border border-[#d2dde4]">
-                        {offer.listings?.platform || 'Asset'}
+                        {listing?.platform || 'Asset'}
                       </span>
                       <span className="text-xs font-bold text-[#526371]">
                         {isBuyer ? 'You made this offer' : 'Offer received on your listing'}
@@ -95,7 +96,7 @@ export default async function OffersDashboard() {
                     </div>
 
                     <h3 className="text-base sm:text-lg font-black text-[#010b13]">
-                      {offer.listings?.title}
+                      {listing?.title || 'Account'}
                     </h3>
 
                     <div className="flex flex-wrap items-center gap-4 text-xs">
@@ -105,7 +106,7 @@ export default async function OffersDashboard() {
                       </div>
                       <div className="text-[#526371]">
                         <span>Asking Price: </span>
-                        <span className="font-mono font-bold text-[#010b13]">${offer.listings?.price}</span>
+                        <span className="font-mono font-bold text-[#010b13]">${listing?.price || '—'}</span>
                       </div>
                       {offer.buyer?.username && !isBuyer && (
                         <div className="text-[#526371]">

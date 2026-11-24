@@ -98,17 +98,53 @@ export async function updateOfferStatus(offerId: string, newStatus: string, coun
       id,
       buyer_id,
       amount,
+      status,
       listing:listing_id (
         id,
         title,
+        seller_id,
         seller:seller_id (username)
       )
     `)
     .eq('id', offerId)
     .single()
 
+  if (!offer) return { error: 'Offer not found' }
+
+  const listingData = Array.isArray(offer.listing) ? offer.listing[0] : offer.listing
+  const sellerId = listingData?.seller_id
+  const buyerId = offer.buyer_id
+  const isSeller = user.id === sellerId
+  const isBuyer = user.id === buyerId
+
+  if (!isSeller && !isBuyer) {
+    return { error: 'Unauthorized: You are not a party to this offer.' }
+  }
+
+  // Validate state transitions to prevent self-acceptance or illegal mutations
+  if (offer.status === 'pending') {
+    // When pending: Only seller can accept, reject, counter. Buyer can only withdraw.
+    if (newStatus === 'withdrawn') {
+      if (!isBuyer) return { error: 'Only the buyer can withdraw a pending offer.' }
+    } else if (['accepted', 'rejected', 'countered'].includes(newStatus)) {
+      if (!isSeller) return { error: 'Only the seller can accept, counter, or reject this offer.' }
+    } else {
+      return { error: 'Invalid status transition for pending offer.' }
+    }
+  } else if (offer.status === 'countered') {
+    // When countered: Only buyer can accept or reject the counter-offer
+    if (['accepted', 'rejected'].includes(newStatus)) {
+      if (!isBuyer) return { error: 'Only the buyer can accept or decline a counter-offer.' }
+    } else {
+      return { error: 'Invalid status transition for countered offer.' }
+    }
+  } else {
+    return { error: `This offer has already been ${offer.status} and cannot be modified.` }
+  }
+
   const updateData: any = { status: newStatus }
   if (newStatus === 'countered' && counterAmount) {
+    if (counterAmount <= 0) return { error: 'Counter-offer amount must be greater than zero.' }
     updateData.amount = counterAmount
   }
 

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { createClient } from '@/utils/supabase/server'
 
 export async function login(formData: FormData) {
@@ -70,8 +71,11 @@ export async function requestPasswordReset(formData: FormData) {
 
   const supabase = await createClient()
   
-  // Try to determine the origin
-  const origin = process.env.NEXT_PUBLIC_SITE_URL || 'https://dealoura.vercel.app'
+  // Dynamically resolve origin from headers or environment
+  const headerList = await headers()
+  const host = headerList.get('x-forwarded-host') || headerList.get('host')
+  const protocol = headerList.get('x-forwarded-proto') || 'https'
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || (host ? `${protocol}://${host}` : 'https://dealoura.com')
   
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${origin}/auth/confirm?next=/reset-password`,

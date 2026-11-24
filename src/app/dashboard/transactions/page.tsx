@@ -258,7 +258,8 @@ export default async function TransactionsDashboard() {
               const isEvaluation = tx.status === 'buyer_7_day_evaluation'
               const isVerifying = tx.status === 'agent_verifying' || tx.status === 'payment_verifying'
               const isPendingPayment = tx.status === 'pending_payment'
-              const isYouTube = tx.listings?.platform?.toLowerCase().includes('youtube')
+              const listing = Array.isArray(tx.listings) ? tx.listings[0] : tx.listings
+              const isYouTube = listing?.platform?.toLowerCase().includes('youtube')
 
               const statusBadgeStyle = isCompleted
                 ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
@@ -309,7 +310,7 @@ export default async function TransactionsDashboard() {
                     </div>
 
                     <h3 className="text-base font-bold text-[#010b13]">
-                      {tx.listings?.title || 'Digital Asset Escrow Contract'}
+                      {listing?.title || 'Digital Asset Escrow Contract'}
                     </h3>
 
                     <div className="flex flex-wrap items-center gap-3 text-xs text-[#526371]">
@@ -320,7 +321,7 @@ export default async function TransactionsDashboard() {
                         </strong>
                       </span>
                       <span>•</span>
-                      <span>Platform: {tx.listings?.platform || 'Social Channel'}</span>
+                      <span>Platform: {listing?.platform || 'Social Channel'}</span>
                       <span>•</span>
                       <span>Date: {new Date(tx.created_at).toLocaleDateString()}</span>
                     </div>

@@ -130,28 +130,19 @@ export default function LiveChat({
     setMessages((prev) => [...prev, optimisticMessage])
 
     try {
-      const { data, error } = await supabase
-        .from('messages')
-        .insert({
-          conversation_id: conversationId,
-          sender_id: currentUserId,
-          content: messageText,
-        })
-        .select('*, sender:sender_id(username)')
-        .single()
+      const formData = new FormData()
+      formData.append('conversation_id', conversationId)
+      formData.append('content', messageText)
 
-      if (error) {
-        const formData = new FormData()
-        formData.append('conversation_id', conversationId)
-        formData.append('content', messageText)
-        await sendMessage(formData)
-      } else if (data) {
-        setMessages((prev) =>
-          prev.map((m) => (m.id === optimisticMessage.id ? data : m))
-        )
+      const result = await sendMessage(formData)
+      if (result?.error) {
+        console.error('Error sending message:', result.error)
+        // Rollback optimistic message on failure
+        setMessages((prev) => prev.filter((m) => m.id !== optimisticMessage.id))
       }
     } catch (err) {
       console.error('Error sending message:', err)
+      setMessages((prev) => prev.filter((m) => m.id !== optimisticMessage.id))
     } finally {
       setIsSending(false)
     }

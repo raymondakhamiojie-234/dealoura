@@ -10,6 +10,10 @@ export async function openDispute(formData: FormData) {
   const transaction_id = formData.get('transaction_id') as string
   const reason = formData.get('reason') as string
   
+  if (!transaction_id || !reason || reason.trim().length < 5) {
+    return { error: 'A valid reason (minimum 5 characters) is required to open a dispute.' }
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
@@ -21,6 +25,7 @@ export async function openDispute(formData: FormData) {
       id,
       buyer_id,
       seller_id,
+      status,
       listing:listings (title),
       buyer:buyer_id (username),
       seller:seller_id (username)
@@ -28,48 +33,61 @@ export async function openDispute(formData: FormData) {
     .eq('id', transaction_id)
     .single()
 
-  // 2. Insert dispute
+  if (!tx) {
+    return { error: 'Transaction not found' }
+  }
+
+  // 2. Strict authorization: Only buyer or seller involved in the transaction can dispute
+  if (user.id !== tx.buyer_id && user.id !== tx.seller_id) {
+    return { error: 'Unauthorized: You are not a party to this transaction.' }
+  }
+
+  // 3. State validation: Cannot dispute already completed, cancelled, or currently disputed transactions
+  if (tx.status === 'completed' || tx.status === 'cancelled' || tx.status === 'disputed') {
+    return { error: `Cannot open dispute on transaction with status '${tx.status}'.` }
+  }
+
+  // 4. Insert dispute
   const { error } = await supabase
     .from('disputes')
     .insert({
       transaction_id,
       opened_by: user.id,
-      reason,
+      reason: reason.trim(),
       status: 'open'
     })
 
   if (error) return { error: error.message }
 
-  // 3. Update transaction status to disputed
+  // 5. Update transaction status to disputed
   await supabase
     .from('transactions')
     .update({ status: 'disputed' })
     .eq('id', transaction_id)
 
-  // 4. Send notification & email to counterparty
-  if (tx) {
-    const isBuyer = user.id === tx.buyer_id
-    const recipientId = isBuyer ? tx.seller_id : tx.buyer_id
-    const recipientName = isBuyer ? (tx.seller as any)?.username || 'Seller' : (tx.buyer as any)?.username || 'Buyer'
-    const listingTitle = (tx.listing as any)?.title || 'Escrow Item'
+  // 6. Send notification & email to counterparty
+  const isBuyer = user.id === tx.buyer_id
+  const recipientId = isBuyer ? tx.seller_id : tx.buyer_id
+  const recipientName = isBuyer ? (tx.seller as any)?.username || 'Seller' : (tx.buyer as any)?.username || 'Buyer'
+  const listingData = Array.isArray(tx.listing) ? tx.listing[0] : tx.listing
+  const listingTitle = listingData?.title || 'Escrow Item'
 
-    const emailHtml = renderDisputeEmail({
-      recipientName,
-      listingTitle,
-      reason,
-      isResolved: false,
-      transactionId: transaction_id
-    })
+  const emailHtml = renderDisputeEmail({
+    recipientName,
+    listingTitle,
+    reason: reason.trim(),
+    isResolved: false,
+    transactionId: transaction_id
+  })
 
-    await createNotification(
-      recipientId,
-      `Escrow Dispute Opened: "${listingTitle}"`,
-      `A dispute was opened for "${listingTitle}". Funds remain safely held in the Dealoura Escrow Vault.`,
-      `/dashboard/transactions/${transaction_id}`,
-      'transaction',
-      emailHtml
-    )
-  }
+  await createNotification(
+    recipientId,
+    `Escrow Dispute Opened: "${listingTitle}"`,
+    `A dispute was opened for "${listingTitle}". Funds remain safely held in the Dealoura Escrow Vault.`,
+    `/dashboard/transactions/${transaction_id}`,
+    'transaction',
+    emailHtml
+  )
 
   revalidatePath(`/dashboard/transactions/${transaction_id}`)
   redirect(`/dashboard/transactions/${transaction_id}`)
@@ -120,7 +138,8 @@ export async function markDisputeUnderReview(disputeId: string, transactionId: s
     .single()
 
   if (tx) {
-    const listingTitle = (tx.listings as any)?.title || 'Escrow Account'
+    const listingData = Array.isArray(tx.listings) ? tx.listings[0] : tx.listings
+    const listingTitle = listingData?.title || 'Escrow Account'
     await createNotification(
       tx.buyer_id,
       `Dispute Under Formal Review: "${listingTitle}"`,
@@ -227,7 +246,8 @@ export async function resolveDispute(
 
   // 4. Notify both buyer and seller of resolution
   if (tx) {
-    const listingTitle = (tx.listings as any)?.title || 'Escrow Item'
+    const listingData = Array.isArray(tx.listings) ? tx.listings[0] : tx.listings
+    const listingTitle = listingData?.title || 'Escrow Item'
 
     // Buyer notification
     const buyerEmailHtml = renderDisputeEmail({

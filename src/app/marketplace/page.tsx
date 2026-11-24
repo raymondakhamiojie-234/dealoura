@@ -69,10 +69,13 @@ export default async function MarketplacePage(props: {
   }
 
   if (q && q.trim()) {
-    const searchTerm = q.trim()
-    query = query.or(
-      `title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,niche.ilike.%${searchTerm}%,account_handle.ilike.%${searchTerm}%`
-    )
+    // Strip commas, parens, quotes and other postgrest delimiters to prevent query syntax errors
+    const sanitizedSearch = q.trim().replace(/[,()"'\\:]/g, ' ').replace(/\s+/g, ' ').trim()
+    if (sanitizedSearch) {
+      query = query.or(
+        `title.ilike.%${sanitizedSearch}%,description.ilike.%${sanitizedSearch}%,niche.ilike.%${sanitizedSearch}%,account_handle.ilike.%${sanitizedSearch}%`
+      )
+    }
   }
 
   // Apply sorting

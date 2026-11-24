@@ -41,8 +41,17 @@ export default async function TransactionTrackerPage(props: { params: Promise<{ 
 
   if (!tx) notFound()
 
-  // Make sure user is involved
-  if (tx.buyer_id !== user.id && tx.seller_id !== user.id) {
+  // Fetch user profile to check admin role
+  const { data: userProfile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  const isAdmin = userProfile?.role === 'admin'
+
+  // Make sure user is involved or is an admin
+  if (tx.buyer_id !== user.id && tx.seller_id !== user.id && !isAdmin) {
     notFound()
   }
 
@@ -85,7 +94,8 @@ export default async function TransactionTrackerPage(props: { params: Promise<{ 
 
   const hasReviewed = !!existingReview
 
-  const isYouTube = tx.listings?.platform?.toLowerCase().includes('youtube')
+  const listingData = Array.isArray(tx.listings) ? tx.listings[0] : tx.listings
+  const isYouTube = listingData?.platform?.toLowerCase().includes('youtube')
 
   // 5-Phase Escrow Steps (YouTube: 7 Days, Other Platforms: 15 Minutes)
   const PHASES = [
@@ -177,11 +187,11 @@ export default async function TransactionTrackerPage(props: { params: Promise<{ 
               <div className="border-b border-[#d2dde4] pb-5">
                 <div className="flex items-center space-x-2 mb-2">
                   <span className="text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-[#010b13] text-[#ebf1f5]">
-                    {tx.listings?.platform || 'Digital Asset'}
+                    {listingData?.platform || 'Digital Asset'}
                   </span>
                   <span className="text-xs text-[#526371] font-semibold">Dealoura Escrow Protocol</span>
                 </div>
-                <h2 className="text-xl sm:text-2xl font-black text-[#010b13] tracking-tight">{tx.listings?.title}</h2>
+                <h2 className="text-xl sm:text-2xl font-black text-[#010b13] tracking-tight">{listingData?.title}</h2>
                 <div className="flex items-center space-x-4 text-xs text-[#526371] mt-2 font-medium">
                   <span>Buyer: <strong className="text-[#010b13]">@{tx.buyer?.username}</strong></span>
                   <span>Seller: <strong className="text-[#010b13]">@{tx.seller?.username}</strong></span>
@@ -258,18 +268,20 @@ export default async function TransactionTrackerPage(props: { params: Promise<{ 
                     Our official Escrow Agent is inspecting the account credentials, checking monetization health, and inviting the buyer as an authorized manager.
                   </p>
 
-                  {/* Developer / Agent Simulation Action */}
-                  <div className="pt-4 border-t border-[#d2dde4]">
-                    <p className="text-[11px] font-mono text-[#526371] mb-2">DEVELOPER / AGENT ACTION:</p>
-                    <form action={updateTransactionState.bind(null, tx.id, 'buyer_7_day_evaluation') as any}>
-                      <button
-                        type="submit"
-                        className="py-2.5 px-5 bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
-                      >
-                        {isYouTube ? '[Agent] Verify & Start 7-Day YouTube Hold' : '[Agent] Verify & Start 15-Minute Hold'}
-                      </button>
-                    </form>
-                  </div>
+                  {/* Escrow Officer / Admin Action */}
+                  {isAdmin && (
+                    <div className="pt-4 border-t border-[#d2dde4]">
+                      <p className="text-[11px] font-mono text-[#526371] mb-2">ESCROW OFFICER ACTION:</p>
+                      <form action={updateTransactionState.bind(null, tx.id, 'buyer_7_day_evaluation') as any}>
+                        <button
+                          type="submit"
+                          className="py-2.5 px-5 bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] font-bold text-xs rounded-xl shadow-xs transition cursor-pointer"
+                        >
+                          {isYouTube ? '[Agent] Verify & Start 7-Day YouTube Hold' : '[Agent] Verify & Start 15-Minute Hold'}
+                        </button>
+                      </form>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -279,7 +291,7 @@ export default async function TransactionTrackerPage(props: { params: Promise<{ 
                   transactionId={tx.id}
                   isBuyer={isBuyer}
                   agreedPrice={tx.agreed_price}
-                  platform={tx.listings?.platform}
+                  platform={listingData?.platform}
                   endsAt={tx.evaluation_ends_at}
                   startedAt={tx.evaluation_started_at}
                   holdDurationMinutes={tx.hold_duration_minutes}

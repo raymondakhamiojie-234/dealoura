@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
+import { headers } from 'next/headers'
 import Link from 'next/link'
 import { 
   Share2, 
@@ -35,7 +36,12 @@ export default async function ReferralPage() {
   }
 
   const username = profile?.username || user?.id?.slice(0, 8) || 'user'
-  const referralLink = `https://dealoura.vercel.app/?ref=${username}`
+  
+  const headerList = await headers()
+  const host = headerList.get('x-forwarded-host') || headerList.get('host')
+  const protocol = headerList.get('x-forwarded-proto') || 'https'
+  const origin = process.env.NEXT_PUBLIC_SITE_URL || (host ? `${protocol}://${host}` : 'https://dealoura.com')
+  const referralLink = `${origin}/?ref=${username}`
 
   return (
     <div className="bg-[#ebf1f5] min-h-screen py-12 font-sans text-[#010b13]">

@@ -158,55 +158,87 @@ export async function depositFundsToWallet(formData: FormData) {
     return { error: 'Please enter a valid deposit amount.' }
   }
 
-  // Call Postgres RPC wallet_deposit_funds
-  const { data, error } = await supabase.rpc('wallet_deposit_funds', {
-    p_user_id: user.id,
-    p_amount: amount,
-    p_method: method,
-    p_reference: reference,
-    p_notes: notes || `Direct deposit via ${method}`
-  })
+  // Security & financial integrity: Only verified 'instant_topup' credits balance immediately.
+  // Manual deposits (bank wire, crypto, etc.) are recorded as 'pending' for Escrow Desk reconciliation
+  // to prevent arbitrary balance inflation.
+  if (method === 'instant_topup') {
+    // Call Postgres RPC wallet_deposit_funds
+    const { error } = await supabase.rpc('wallet_deposit_funds', {
+      p_user_id: user.id,
+      p_amount: amount,
+      p_method: method,
+      p_reference: reference,
+      p_notes: notes || `Direct deposit via ${method}`
+    })
 
-  if (error) {
-    // Fallback: direct table update if RPC is pending migration
+    if (error) {
+      // Fallback: direct table update if RPC is pending migration
+      try {
+        const { data: wallet } = await supabase
+          .from('user_wallets')
+          .select('available_balance')
+          .eq('user_id', user.id)
+          .single()
+
+        const currentBal = Number(wallet?.available_balance || 0)
+        await supabase
+          .from('user_wallets')
+          .update({ available_balance: currentBal + amount, updated_at: new Date().toISOString() })
+          .eq('user_id', user.id)
+
+        await supabase.from('wallet_transactions').insert({
+          user_id: user.id,
+          type: 'deposit',
+          amount: amount,
+          fee: 0,
+          status: 'completed',
+          reference_id: reference,
+          payment_method: method,
+          description: `Instant wallet balance top-up`
+        })
+      } catch (e: any) {
+        return { error: e.message || 'Deposit could not be processed' }
+      }
+    }
+
+    await createNotification(
+      user.id,
+      `Deposit Credited: $${amount.toLocaleString()} USD`,
+      `Your Dealoura wallet has been credited with $${amount.toLocaleString()} USD. You can now use your balance for 1-click escrow purchases.`,
+      '/dashboard/wallet',
+      'transaction'
+    )
+
+    revalidatePath('/dashboard/wallet')
+    return { success: true, amount, pending: false }
+  } else {
+    // Bank wire / Crypto deposit: record as pending for reconciliation without inflating balance
     try {
-      const { data: wallet } = await supabase
-        .from('user_wallets')
-        .select('available_balance')
-        .eq('user_id', user.id)
-        .single()
-
-      const currentBal = Number(wallet?.available_balance || 0)
-      await supabase
-        .from('user_wallets')
-        .update({ available_balance: currentBal + amount, updated_at: new Date().toISOString() })
-        .eq('user_id', user.id)
-
       await supabase.from('wallet_transactions').insert({
         user_id: user.id,
         type: 'deposit',
         amount: amount,
         fee: 0,
-        status: 'completed',
+        status: 'pending',
         reference_id: reference,
         payment_method: method,
-        description: `Wallet balance deposit via ${method}`
+        description: notes || `Deposit via ${method.replace('_', ' ')} (Awaiting verification)`
       })
+
+      await createNotification(
+        user.id,
+        `Deposit Received (Pending): $${amount.toLocaleString()} USD`,
+        `Your ${method.replace('_', ' ')} deposit request of $${amount.toLocaleString()} USD (Ref: ${reference}) is logged. Funds will reflect in your balance upon Escrow Desk confirmation.`,
+        '/dashboard/wallet',
+        'transaction'
+      )
+
+      revalidatePath('/dashboard/wallet')
+      return { success: true, amount, pending: true }
     } catch (e: any) {
-      return { error: e.message || 'Deposit could not be processed' }
+      return { error: e.message || 'Deposit could not be recorded' }
     }
   }
-
-  await createNotification(
-    user.id,
-    `Deposit Credited: $${amount.toLocaleString()} USD`,
-    `Your Dealoura wallet has been credited with $${amount.toLocaleString()} USD. You can now use your balance for 1-click escrow purchases.`,
-    '/dashboard/wallet',
-    'transaction'
-  )
-
-  revalidatePath('/dashboard/wallet')
-  return { success: true, amount }
 }
 
 // 4. Pay Escrow Instantly from Wallet Balance
@@ -285,6 +317,7 @@ export async function payEscrowFromWallet(transactionId: string) {
     .eq('id', transactionId)
 
   // Log in ledger
+  const listingData = Array.isArray(tx.listings) ? tx.listings[0] : tx.listings
   await supabase.from('wallet_transactions').insert({
     user_id: user.id,
     type: 'escrow_lock',
@@ -293,7 +326,7 @@ export async function payEscrowFromWallet(transactionId: string) {
     status: 'completed',
     reference_id: transactionId,
     payment_method: 'wallet_balance',
-    description: `Locked in Escrow Vault for "${tx.listings?.title || 'Account'}" (#${transactionId.slice(0, 8)})`
+    description: `Locked in Escrow Vault for "${listingData?.title || 'Account'}" (#${transactionId.slice(0, 8)})`
   })
 
   // Log in payments table
