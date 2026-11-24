@@ -149,6 +149,17 @@ export async function updateVerificationStatus(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
+  // Check admin role
+  const { data: adminProfile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (adminProfile?.role !== 'admin') {
+    return { error: 'Unauthorized: Administrator privileges required.' }
+  }
+
   // 1. Fetch current verification details
   const { data: verif, error: fetchErr } = await supabase
     .from('verifications')
@@ -236,6 +247,84 @@ export async function updateVerificationStatus(
       console.warn('KYC notification warning:', notifErr)
     }
   }
+
+  revalidatePath('/admin/verifications')
+  revalidatePath('/dashboard/profile')
+  revalidatePath('/dashboard/profile/verification')
+  return { success: true }
+}
+
+/**
+ * Mark Verification Submission Under Active Review
+ */
+export async function markVerificationUnderReview(verificationId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: adminProfile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (adminProfile?.role !== 'admin') {
+    return { error: 'Unauthorized: Admin privileges required.' }
+  }
+
+  const { error } = await supabase
+    .from('verifications')
+    .update({ 
+      status: 'under_review',
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', verificationId)
+
+  if (error) return { error: error.message }
+
+  revalidatePath('/admin/verifications')
+  revalidatePath('/dashboard/profile/verification')
+  return { success: true }
+}
+
+/**
+ * Admin action to revoke verification status if terms are violated
+ */
+export async function adminRevokeVerification(userId: string, reason: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Not authenticated' }
+
+  const { data: adminProfile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (adminProfile?.role !== 'admin') {
+    return { error: 'Unauthorized: Admin privileges required.' }
+  }
+
+  // Downgrade to Level 1
+  const { error } = await supabase
+    .from('user_profiles')
+    .update({
+      is_verified: false,
+      is_trusted: false,
+      verification_level: 1,
+    })
+    .eq('id', userId)
+
+  if (error) return { error: error.message }
+
+  // Notify user
+  await createNotification(
+    userId,
+    'Merchant Verification Revoked',
+    `Your verified badge has been revoked by Dealoura Compliance. Reason: ${reason}`,
+    '/dashboard/profile/verification',
+    'system'
+  )
 
   revalidatePath('/admin/verifications')
   revalidatePath('/dashboard/profile')
