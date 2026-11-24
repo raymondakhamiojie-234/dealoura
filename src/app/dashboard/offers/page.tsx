@@ -2,7 +2,7 @@ import { createClient } from '@/utils/supabase/server'
 import { updateOfferStatus } from '@/app/actions/offers'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ShieldCheck, ArrowRight, Clock, CheckCircle2, XCircle, DollarSign, Tag, ArrowLeft } from 'lucide-react'
+import { ShieldCheck, ArrowRight, Clock, CheckCircle2, XCircle, DollarSign, Tag, ArrowLeft, ShoppingBag } from 'lucide-react'
 
 export default async function OffersDashboard() {
   const supabase = await createClient()
@@ -10,14 +10,14 @@ export default async function OffersDashboard() {
 
   if (!user) redirect('/login')
 
-  // Fetch offers. RLS automatically ensures the user only sees offers 
-  // where they are the buyer or the seller of the connected listing.
+  // Fetch offers with joined listings and transactions
   const { data: offers, error } = await supabase
     .from('offers')
     .select(`
       *,
       listings (title, seller_id, price, platform),
-      buyer:buyer_id (username)
+      buyer:buyer_id (username),
+      transactions (id, status)
     `)
     .order('created_at', { ascending: false })
 
@@ -43,13 +43,22 @@ export default async function OffersDashboard() {
             </p>
           </div>
 
-          <Link
-            href="/marketplace"
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] text-xs font-bold rounded-xl transition shadow-xs cursor-pointer"
-          >
-            <Tag className="w-4 h-4" />
-            <span>Browse Marketplace</span>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/dashboard/transactions"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white border border-[#d2dde4] hover:bg-[#d2dde4] text-[#010b13] text-xs font-bold rounded-xl transition shadow-xs cursor-pointer"
+            >
+              <ShoppingBag className="w-4 h-4" />
+              <span>Orders &amp; Sales</span>
+            </Link>
+            <Link
+              href="/marketplace"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] text-xs font-bold rounded-xl transition shadow-xs cursor-pointer"
+            >
+              <Tag className="w-4 h-4" />
+              <span>Browse Marketplace</span>
+            </Link>
+          </div>
         </div>
 
         {/* Offers List */}
@@ -165,15 +174,36 @@ export default async function OffersDashboard() {
                     )}
 
                     {/* If accepted, link to Phase 3 Payment / Transaction Room */}
-                    {offer.status === 'accepted' && (
-                      <Link
-                        href={`/dashboard/transactions/new?offer_id=${offer.id}`}
-                        className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] text-xs font-bold rounded-xl transition shadow-xs cursor-pointer"
-                      >
-                        <span>{isBuyer ? 'Proceed to Escrow Deposit' : 'View Transaction'}</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
-                    )}
+                    {offer.status === 'accepted' && (() => {
+                      const tx = Array.isArray(offer.transactions) ? offer.transactions[0] : offer.transactions
+                      if (tx?.id) {
+                        return (
+                          <Link
+                            href={`/dashboard/transactions/${tx.id}`}
+                            className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] text-xs font-bold rounded-xl transition shadow-xs cursor-pointer"
+                          >
+                            <span>Track Escrow Order</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </Link>
+                        )
+                      }
+                      if (isBuyer) {
+                        return (
+                          <Link
+                            href={`/dashboard/transactions/new?offer_id=${offer.id}`}
+                            className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] text-xs font-bold rounded-xl transition shadow-xs cursor-pointer"
+                          >
+                            <span>Proceed to Escrow Deposit</span>
+                            <ArrowRight className="w-3.5 h-3.5" />
+                          </Link>
+                        )
+                      }
+                      return (
+                        <span className="text-[11px] font-mono text-[#526371] px-3.5 py-2 rounded-xl bg-[#ebf1f5] border border-[#d2dde4] font-bold">
+                          Awaiting Buyer Deposit
+                        </span>
+                      )
+                    })()}
                   </div>
                 </div>
               )

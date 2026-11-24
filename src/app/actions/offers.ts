@@ -82,6 +82,7 @@ export async function makeOffer(formData: FormData) {
   }
 
   revalidatePath('/dashboard/offers')
+  revalidatePath('/dashboard/transactions')
   redirect('/dashboard/offers')
 }
 
@@ -164,5 +165,6 @@ export async function updateOfferStatus(offerId: string, newStatus: string, coun
   }
 
   revalidatePath('/dashboard/offers')
+  revalidatePath('/dashboard/transactions')
   return { success: true }
 }

@@ -1,4 +1,5 @@
 import { createClient } from '@/utils/supabase/server'
+import { buyListingNow } from '@/app/actions/transactions'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import ListingGallery from './ListingGallery'
@@ -248,15 +249,27 @@ export default async function ListingDetailsPage(props: { params: Promise<{ id: 
                 </div>
               ) : !isOwner && user ? (
                 <div className="space-y-3 pt-2">
+                  <form action={async () => {
+                    'use server'
+                    await buyListingNow(listing.id)
+                  }}>
+                    <button
+                      type="submit"
+                      className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl shadow-md text-sm font-black text-[#ebf1f5] bg-[#010b13] hover:bg-[#18263B] transition cursor-pointer"
+                    >
+                      <Lock className="w-4 h-4 text-[#ebf1f5]" />
+                      <span>Buy Now &bull; ${Number(listing.price).toLocaleString()}</span>
+                    </button>
+                  </form>
                   <Link
                     href={`/dashboard/offers/new?listing_id=${listing.id}`}
-                    className="w-full flex items-center justify-center py-3.5 px-6 rounded-xl shadow-md text-sm font-bold text-[#ebf1f5] bg-[#010b13] hover:bg-[#0a1722] transition"
+                    className="w-full flex items-center justify-center py-3 px-6 border border-[#010b13] rounded-xl text-xs font-bold text-[#010b13] bg-white hover:bg-[#ebf1f5] transition"
                   >
                     Make an Escrow Offer
                   </Link>
                   <Link
                     href={`/dashboard/messages/new?listing_id=${listing.id}&seller_id=${listing.seller_id}`}
-                    className="w-full flex items-center justify-center py-3 px-6 border border-[#d2dde4] rounded-xl text-sm font-semibold text-[#010b13] bg-[#ebf1f5] hover:bg-[#d2dde4] transition"
+                    className="w-full flex items-center justify-center py-2.5 px-6 border border-[#d2dde4] rounded-xl text-xs font-semibold text-[#526371] hover:text-[#010b13] bg-[#ebf1f5] hover:bg-[#d2dde4] transition"
                   >
                     Message Seller
                   </Link>
@@ -266,13 +279,13 @@ export default async function ListingDetailsPage(props: { params: Promise<{ id: 
               {!user && !isSold && (
                 <div className="bg-[#ebf1f5] rounded-xl p-5 text-center border border-[#d2dde4] space-y-3">
                   <p className="text-xs text-[#526371]">
-                    Sign in or create an account to submit an escrow offer or speak with this seller.
+                    Sign in or create an account to purchase instantly or submit an escrow proposal.
                   </p>
                   <Link
                     href={`/login?redirect=/marketplace/listings/${listing.id}`}
                     className="inline-block w-full py-3 px-6 bg-[#010b13] hover:bg-[#0a1722] text-[#ebf1f5] font-bold text-xs rounded-xl shadow-sm transition"
                   >
-                    Sign In to Make an Escrow Offer
+                    Sign In to Purchase or Make an Offer
                   </Link>
                 </div>
               )}

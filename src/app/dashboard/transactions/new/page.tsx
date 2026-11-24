@@ -13,10 +13,10 @@ export default async function NewTransactionPage(props: { searchParams: Promise<
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Fetch offer to confirm it's accepted and belongs to this user
+  // Fetch offer to confirm it's accepted
   const { data: offer, error: fetchError } = await supabase
     .from('offers')
-    .select('*, listings(title, price, platform)')
+    .select('*, listings(id, title, price, platform, seller_id)')
     .eq('id', offerId)
     .single()
 
@@ -43,6 +43,19 @@ export default async function NewTransactionPage(props: { searchParams: Promise<
     )
   }
 
+  // Check if transaction already exists for this offer
+  const { data: existingTx } = await supabase
+    .from('transactions')
+    .select('id')
+    .eq('offer_id', offerId)
+    .maybeSingle()
+
+  if (existingTx) {
+    redirect(`/dashboard/transactions/${existingTx.id}`)
+  }
+
+  const listingData = Array.isArray(offer.listings) ? offer.listings[0] : offer.listings
+  const isSeller = user.id === listingData?.seller_id
   const escrowFee = Math.round(offer.amount * 0.05 * 100) / 100
   const totalDue = Math.round((offer.amount + escrowFee) * 100) / 100
 
@@ -62,11 +75,15 @@ export default async function NewTransactionPage(props: { searchParams: Promise<
         <div className="bg-[#ffffff] rounded-2xl p-6 sm:p-8 border border-[#d2dde4] shadow-xs space-y-6">
           <div>
             <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#010b13] text-[#ebf1f5]">
-              Initiate Escrow Room
+              {isSeller ? 'Offer Accepted' : 'Initiate Escrow Room'}
             </span>
-            <h1 className="text-2xl font-black text-[#010b13] tracking-tight mt-2">Confirm Escrow Purchase</h1>
+            <h1 className="text-2xl font-black text-[#010b13] tracking-tight mt-2">
+              {isSeller ? 'Awaiting Buyer Escrow Deposit' : 'Confirm Escrow Purchase'}
+            </h1>
             <p className="text-xs text-[#526371] mt-1">
-              The seller accepted your offer. Initialize the formal transaction room to deposit funds into the segregated escrow vault.
+              {isSeller
+                ? 'You accepted this offer. The buyer has been notified to complete the escrow payment into the segregated vault. Once the deposit is funded, you will be prompted to submit credentials.'
+                : 'The seller accepted your offer. Initialize the formal transaction room to deposit funds into the segregated escrow vault.'}
             </p>
           </div>
 
@@ -74,8 +91,8 @@ export default async function NewTransactionPage(props: { searchParams: Promise<
             <div className="flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-mono font-bold uppercase text-[#526371] block">Digital Asset</span>
-                <p className="text-base font-black text-[#010b13]">{offer.listings?.title}</p>
-                <span className="text-xs text-[#526371] font-semibold">{offer.listings?.platform}</span>
+                <p className="text-base font-black text-[#010b13]">{listingData?.title}</p>
+                <span className="text-xs text-[#526371] font-semibold">{listingData?.platform}</span>
               </div>
               <div className="text-right">
                 <span className="text-[10px] font-mono uppercase text-[#526371] block">Agreed Price</span>
@@ -104,22 +121,39 @@ export default async function NewTransactionPage(props: { searchParams: Promise<
             <span>Dealoura Escrow Protection: Funds will be held in our secure escrow vault. The seller will not receive payment until the 7-day buyer evaluation period finishes.</span>
           </div>
 
-          <form action={async () => {
-            'use server'
-            const res = await createTransactionFromOffer(offerId)
-            if (res?.error) {
-              throw new Error(res.error)
-            }
-          }}>
-            <button
-              type="submit"
-              className="w-full py-3.5 px-5 bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] font-extrabold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Lock className="w-4 h-4 text-[#ebf1f5]" />
-              <span>Create Transaction & Proceed to Escrow Deposit</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </form>
+          {isSeller ? (
+            <div className="pt-2 flex flex-col sm:flex-row gap-3">
+              <Link
+                href="/dashboard/transactions"
+                className="flex-1 py-3.5 px-5 bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] font-extrabold text-xs rounded-xl shadow-xs transition text-center"
+              >
+                View Orders &amp; Sales Desk
+              </Link>
+              <Link
+                href="/dashboard/offers"
+                className="py-3.5 px-5 border border-[#d2dde4] hover:bg-[#ebf1f5] text-[#010b13] font-bold text-xs rounded-xl transition text-center"
+              >
+                Back to Offers
+              </Link>
+            </div>
+          ) : (
+            <form action={async () => {
+              'use server'
+              const res = await createTransactionFromOffer(offerId)
+              if (res?.error) {
+                throw new Error(res.error)
+              }
+            }}>
+              <button
+                type="submit"
+                className="w-full py-3.5 px-5 bg-[#010b13] hover:bg-[#18263B] text-[#ebf1f5] font-extrabold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Lock className="w-4 h-4 text-[#ebf1f5]" />
+                <span>Create Transaction & Proceed to Escrow Deposit</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            </form>
+          )}
         </div>
 
       </div>

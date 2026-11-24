@@ -38,6 +38,23 @@ export async function createTransactionFromOffer(offerId: string) {
     redirect(`/dashboard/transactions/${existingTx.id}`)
   }
 
+  // Safely extract listing and seller_id
+  const listingData = Array.isArray(offer.listings) ? offer.listings[0] : offer.listings
+  let sellerId = listingData?.seller_id
+
+  if (!sellerId && offer.listing_id) {
+    const { data: directListing } = await supabase
+      .from('listings')
+      .select('seller_id')
+      .eq('id', offer.listing_id)
+      .single()
+    sellerId = directListing?.seller_id
+  }
+
+  if (!sellerId) {
+    return { error: 'Unable to resolve seller identity for this listing' }
+  }
+
   // Calculate standard 5% escrow protection fee
   const escrowFee = Math.round(offer.amount * 0.05 * 100) / 100
 
@@ -46,7 +63,7 @@ export async function createTransactionFromOffer(offerId: string) {
     .from('transactions')
     .insert({
       buyer_id: offer.buyer_id,
-      seller_id: offer.listings.seller_id,
+      seller_id: sellerId,
       listing_id: offer.listing_id,
       offer_id: offer.id,
       agreed_price: offer.amount,
@@ -64,7 +81,104 @@ export async function createTransactionFromOffer(offerId: string) {
   // Lock the listing so others can't buy it
   await supabase.from('listings').update({ status: 'sold' }).eq('id', offer.listing_id)
 
+  // Notify seller of initialized transaction
+  await createNotification(
+    sellerId,
+    `Escrow Order Initialized: "${listingData?.title || 'Account'}"`,
+    `An escrow transaction room (#${tx.id.slice(0, 8)}) has been created. Awaiting buyer deposit.`,
+    `/dashboard/transactions/${tx.id}`,
+    'transaction'
+  )
+
   revalidatePath('/dashboard/transactions')
+  redirect(`/dashboard/transactions/${tx.id}`)
+}
+
+// 1b. Direct Buy Now: Creates an instant escrow order at asking price
+export async function buyListingNow(listingId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    redirect(`/login?redirect=/marketplace/listings/${listingId}`)
+  }
+
+  // Fetch listing details
+  const { data: listing, error: lError } = await supabase
+    .from('listings')
+    .select('id, title, price, seller_id, status, platform')
+    .eq('id', listingId)
+    .single()
+
+  if (lError || !listing) return { error: 'Listing not found' }
+  if (listing.seller_id === user.id) return { error: 'You cannot purchase your own listing' }
+  if (listing.status === 'sold') return { error: 'This listing has already been sold' }
+
+  // Check if an active transaction already exists for this listing and buyer
+  const { data: existingTx } = await supabase
+    .from('transactions')
+    .select('id')
+    .eq('listing_id', listingId)
+    .eq('buyer_id', user.id)
+    .neq('status', 'cancelled')
+    .maybeSingle()
+
+  if (existingTx) {
+    redirect(`/dashboard/transactions/${existingTx.id}`)
+  }
+
+  // Auto-record an accepted offer record for ledger completeness
+  const expiresAt = new Date()
+  expiresAt.setDate(expiresAt.getDate() + 7)
+
+  const { data: autoOffer } = await supabase
+    .from('offers')
+    .insert({
+      listing_id: listing.id,
+      buyer_id: user.id,
+      amount: listing.price,
+      message: 'Instant Buy Order at Asking Price',
+      status: 'accepted',
+      expires_at: expiresAt.toISOString(),
+    })
+    .select('id')
+    .maybeSingle()
+
+  const escrowFee = Math.round(listing.price * 0.05 * 100) / 100
+
+  // Insert Transaction
+  const { data: tx, error: txError } = await supabase
+    .from('transactions')
+    .insert({
+      buyer_id: user.id,
+      seller_id: listing.seller_id,
+      listing_id: listing.id,
+      offer_id: autoOffer?.id || null,
+      agreed_price: listing.price,
+      escrow_fee: escrowFee,
+      status: 'pending_payment',
+    })
+    .select('id')
+    .single()
+
+  if (txError) {
+    console.error('buyListingNow txError:', txError)
+    return { error: txError.message }
+  }
+
+  // Lock listing so it's not double-sold
+  await supabase.from('listings').update({ status: 'sold' }).eq('id', listing.id)
+
+  // Notify seller of instant order
+  await createNotification(
+    listing.seller_id,
+    `New Order Received: "${listing.title}"`,
+    `A buyer purchased "${listing.title}" at asking price ($${listing.price}). Escrow transaction #${tx.id.slice(0, 8)} created.`,
+    `/dashboard/transactions/${tx.id}`,
+    'transaction'
+  )
+
+  revalidatePath('/dashboard/transactions')
+  revalidatePath(`/marketplace/listings/${listingId}`)
   redirect(`/dashboard/transactions/${tx.id}`)
 }
 

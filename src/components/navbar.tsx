@@ -14,7 +14,8 @@ import {
   Wallet, 
   ArrowRight, 
   PlusCircle, 
-  ShoppingBag 
+  ShoppingBag,
+  Tag
 } from 'lucide-react'
 
 export default function Navbar() {
@@ -178,6 +179,18 @@ export default function Navbar() {
                 <span>Orders</span>
               </Link>
               <Link 
+                href="/dashboard/offers" 
+                className={`p-2 rounded-lg transition text-xs font-semibold flex items-center gap-1.5 ${
+                  isActive('/dashboard/offers') 
+                    ? 'bg-[#d2dde4] text-[#010b13]' 
+                    : 'text-[#526371] hover:bg-[#d2dde4]/50 hover:text-[#010b13]'
+                }`}
+                title="Offers & Proposals"
+              >
+                <Tag className="w-4 h-4 text-[#010b13]" />
+                <span>Offers</span>
+              </Link>
+              <Link 
                 href="/dashboard/messages" 
                 className="p-2 text-[#526371] hover:text-[#010b13] hover:bg-[#d2dde4]/50 rounded-lg transition" 
                 title="Messages"
@@ -282,6 +295,13 @@ export default function Navbar() {
                   className="w-full text-center py-2.5 px-4 text-xs font-bold text-[#ebf1f5] bg-[#010b13] rounded-xl"
                 >
                   My Orders &amp; Escrow
+                </Link>
+                <Link
+                  href="/dashboard/offers"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full text-center py-2 px-4 text-xs font-bold text-[#010b13] bg-white border border-[#d2dde4] rounded-xl"
+                >
+                  Manage Offers &amp; Proposals
                 </Link>
                 <button
                   onClick={() => {
