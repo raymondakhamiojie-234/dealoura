@@ -258,6 +258,17 @@ export async function adminConfirmEscrowDeposit(transactionId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Not authenticated' }
 
+  // Check admin role
+  const { data: profile } = await supabase
+    .from('user_profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single()
+
+  if (profile?.role !== 'admin') {
+    return { error: 'Unauthorized: Admin privileges required.' }
+  }
+
   // Fetch transaction with buyer and seller details
   const { data: tx } = await supabase
     .from('transactions')
@@ -286,7 +297,7 @@ export async function adminConfirmEscrowDeposit(transactionId: string) {
     .update({ status: 'succeeded' })
     .eq('transaction_id', transactionId)
 
-  const listingTitle = tx.listings?.title || 'Account'
+  const listingTitle = (tx.listings as any)?.title || 'Account'
   const sellerUsername = (tx.seller as any)?.username || 'Seller'
   const buyerUsername = (tx.buyer as any)?.username || 'Buyer'
 
