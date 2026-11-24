@@ -437,50 +437,6 @@ export default async function TransactionTrackerPage(props: { params: Promise<{ 
                 />
               )}
 
-              {/* ACTION STAGE: DISPUTED */}
-              {tx.status === 'disputed' && (
-                <div className="bg-red-50 border border-red-200 rounded-2xl p-6 text-center text-red-900 space-y-2">
-                  <AlertTriangle className="w-8 h-8 text-red-600 mx-auto" />
-                  <h3 className="text-base font-black text-red-950">Transaction Under Formal Dispute</h3>
-                  <p className="text-xs text-red-800 max-w-md mx-auto">
-                    An arbitration ticket is currently open. Dealoura staff are inspecting chat history and verification evidence. Funds are frozen in escrow until resolution.
-                  </p>
-                </div>
-              )}
-
-              {/* Open Dispute Form (Available during active transfer) */}
-              {tx.status !== 'completed' && tx.status !== 'cancelled' && tx.status !== 'disputed' && (
-                <div className="pt-6 border-t border-[#d2dde4]">
-                  <div className="flex items-center justify-between mb-2">
-                    <h4 className="text-xs font-bold uppercase text-[#526371] tracking-wider">Need Assistance?</h4>
-                    <span className="text-[11px] text-[#526371]">Escrow Protection Guarantee</span>
-                  </div>
-                  <form
-                    action={async (formData) => {
-                      'use server'
-                      const { openDispute } = await import('@/app/actions/disputes')
-                      await openDispute(formData)
-                    }}
-                    className="space-y-3"
-                  >
-                    <input type="hidden" name="transaction_id" value={tx.id} />
-                    <textarea
-                      name="reason"
-                      required
-                      rows={2}
-                      placeholder="Describe any issue (e.g. invalid credentials, unassigned manager access, strikes)..."
-                      className="w-full text-xs rounded-xl border border-[#d2dde4] bg-[#ebf1f5]/30 text-[#010b13] p-3 outline-none focus:border-red-500 focus:bg-[#ffffff] transition"
-                    />
-                    <button
-                      type="submit"
-                      className="text-xs font-bold text-red-600 hover:text-red-700 hover:underline cursor-pointer"
-                    >
-                      Open a Formal Dispute Ticket &rarr;
-                    </button>
-                  </form>
-                </div>
-              )}
-
             </div>
           </div>
 
@@ -512,16 +468,24 @@ export default async function TransactionTrackerPage(props: { params: Promise<{ 
               <div className="space-y-1.5 text-[11px] text-[#ebf1f5]/70">
                 <p>• Assigned Escrow Officer: <strong className="text-[#ebf1f5]">escrow@dealoura.com</strong></p>
                 <p>• Inspection Status: Segregated Custody</p>
-                <p>• Payout Guarantee: Released upon 7-day confirmation</p>
+                <p>• Payout Guarantee: {isYouTube ? 'Released after 7-Day YouTube Hold' : 'Released after 15-Minute Hold'}</p>
               </div>
 
-              <div className="pt-2">
+              <div className="pt-2 space-y-2">
                 <Link
-                  href="/dashboard/messages/escrow"
-                  className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 bg-[#18263B] hover:bg-[#ebf1f5] hover:text-[#010b13] text-[#ebf1f5] text-xs font-bold rounded-xl transition border border-[#d2dde4]/20"
+                  href={`/dashboard/messages/new?listing_id=${tx.listing_id}&recipient_id=${isBuyer ? tx.seller_id : tx.buyer_id}`}
+                  className="w-full inline-flex items-center justify-center gap-2 py-3 px-4 bg-[#ffffff] hover:bg-[#ebf1f5] text-[#010b13] text-xs font-bold rounded-xl transition shadow-xs"
                 >
                   <MessageSquare className="w-4 h-4" />
-                  Contact Escrow Agent Desk
+                  <span>Message {isBuyer ? 'Seller' : 'Buyer'}</span>
+                </Link>
+
+                <Link
+                  href="/dashboard/messages/escrow"
+                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 px-4 bg-[#18263B] hover:bg-[#18263B]/80 text-[#ebf1f5] text-xs font-bold rounded-xl transition border border-[#d2dde4]/20"
+                >
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <span>Dealoura Escrow Help Desk</span>
                 </Link>
               </div>
             </div>

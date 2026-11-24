@@ -104,26 +104,39 @@ export default async function TransactionsDashboard() {
             transactions.map((tx: any) => {
               const isBuyer = tx.buyer_id === user.id
               const isCompleted = tx.status === 'completed'
+              const isDisputed = tx.status === 'disputed'
+              const isCancelled = tx.status === 'cancelled'
               const isEvaluation = tx.status === 'buyer_7_day_evaluation'
               const isVerifying = tx.status === 'agent_verifying' || tx.status === 'payment_verifying'
               const isPendingPayment = tx.status === 'pending_payment'
+              const isYouTube = tx.listings?.platform?.toLowerCase().includes('youtube')
 
               const statusBadgeStyle = isCompleted
-                ? 'bg-[#ebf1f5] text-[#010b13] border-[#d2dde4]'
+                ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
+                : isDisputed
+                ? 'bg-red-100 text-red-900 border-red-300 font-black'
+                : isCancelled
+                ? 'bg-slate-100 text-slate-700 border-slate-300'
                 : isEvaluation
-                ? 'bg-amber-100 text-amber-900 border-amber-200'
+                ? 'bg-amber-100 text-amber-900 border-amber-300'
                 : isVerifying
                 ? 'bg-blue-100 text-blue-900 border-blue-200'
-                : 'bg-slate-100 text-slate-800 border-slate-200'
+                : 'bg-[#ebf1f5] text-[#010b13] border-[#d2dde4]'
 
-              const formattedStatus = tx.status === 'buyer_7_day_evaluation'
-                ? '7-Day Inspection Running'
+              const formattedStatus = isDisputed
+                ? 'Dispute in Arbitration'
+                : isCancelled
+                ? 'Cancelled / Refunded'
+                : isEvaluation
+                ? (isYouTube ? '7-Day YouTube Hold' : '15-Min Fast Inspection')
                 : tx.status === 'agent_verifying'
                 ? 'Agent Auditing'
                 : tx.status === 'payment_verifying'
                 ? 'Payment Reconciling'
                 : tx.status === 'pending_payment'
                 ? 'Awaiting Deposit'
+                : isCompleted
+                ? (!isBuyer && tx.payout_status === 'completed' ? 'Completed (Payout Sent)' : 'Deal Completed')
                 : tx.status.replace(/_/g, ' ')
 
               return (
