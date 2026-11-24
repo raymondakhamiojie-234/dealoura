@@ -820,3 +820,139 @@ export async function adminDisburseSellerPayout(transactionId: string, txHashOrR
   revalidatePath('/admin/transactions')
   return { success: true }
 }
+
+/**
+ * Auto-releases an escrow transaction if its evaluation hold timer has expired
+ * (7-Day YouTube hold or 15-Minute other platform hold) with no dispute filed.
+ */
+export async function autoReleaseExpiredTransaction(transactionId: string) {
+  const supabase = await createClient()
+
+  // 1. Fetch transaction
+  const { data: tx, error: fetchErr } = await supabase
+    .from('transactions')
+    .select(`
+      id,
+      status,
+      agreed_price,
+      escrow_fee,
+      seller_id,
+      buyer_id,
+      evaluation_ends_at,
+      payout_status,
+      listings (title, platform)
+    `)
+    .eq('id', transactionId)
+    .single()
+
+  if (fetchErr || !tx) {
+    return { error: 'Transaction not found.' }
+  }
+
+  // Must currently be in evaluation hold
+  if (tx.status !== 'buyer_7_day_evaluation') {
+    return { error: 'Transaction is not in evaluation hold.' }
+  }
+
+  // Must have an evaluation_ends_at date
+  if (!tx.evaluation_ends_at) {
+    return { error: 'Transaction has no evaluation deadline.' }
+  }
+
+  const nowMs = Date.now()
+  const endsAtMs = new Date(tx.evaluation_ends_at).getTime()
+
+  // If timer hasn't expired yet, do not release
+  if (endsAtMs > nowMs) {
+    return { error: 'Evaluation hold period has not expired yet.' }
+  }
+
+  // 2. Advance transaction to completed & mark payout pending
+  const { error: updateErr } = await supabase
+    .from('transactions')
+    .update({
+      status: 'completed',
+      payout_status: tx.payout_status === 'completed' ? 'completed' : 'pending'
+    })
+    .eq('id', transactionId)
+
+  if (updateErr) return { error: updateErr.message }
+
+  // 3. Log timeline event
+  await supabase.from('transaction_timeline').insert({
+    transaction_id: transactionId,
+    status: 'completed',
+    description: 'Evaluation hold period concluded with zero disputes reported. Dealoura Escrow has automatically finalized the transfer and released funds to the seller payout queue.'
+  })
+
+  const listingTitle = (tx.listings as any)?.title || 'Account'
+  const escrowFee = tx.escrow_fee || Math.round(tx.agreed_price * 0.05 * 100) / 100
+  const netEarnings = Math.max(0, tx.agreed_price - escrowFee)
+
+  // 4. Alert Seller
+  await createNotification(
+    tx.seller_id,
+    `Hold Expired: Funds Released to Payout Queue`,
+    `The evaluation hold for "${listingTitle}" has concluded with no disputes filed. Your net proceeds ($${netEarnings} USD) are now pending disbursement.`,
+    `/dashboard/transactions/${transactionId}`,
+    'transaction'
+  )
+
+  // 5. Alert Buyer
+  await createNotification(
+    tx.buyer_id,
+    `Escrow Completed: "${listingTitle}"`,
+    `The evaluation inspection window has elapsed and the transaction is now completed. Thank you for using Dealoura Escrow!`,
+    `/dashboard/transactions/${transactionId}`,
+    'transaction'
+  )
+
+  revalidatePath(`/dashboard/transactions/${transactionId}`)
+  revalidatePath('/dashboard/transactions')
+  revalidatePath('/admin/transactions')
+  return { success: true, transactionId }
+}
+
+/**
+ * Sweeps all transactions and auto-releases any that have expired evaluation holds
+ */
+export async function autoReleaseAllExpiredTransactions() {
+  const supabase = await createClient()
+
+  const nowIso = new Date().toISOString()
+
+  // Fetch all transactions currently in evaluation hold whose deadline is <= NOW
+  const { data: expiredTxs, error } = await supabase
+    .from('transactions')
+    .select('id, evaluation_ends_at')
+    .eq('status', 'buyer_7_day_evaluation')
+    .lte('evaluation_ends_at', nowIso)
+
+  if (error) {
+    console.error('Error fetching expired transactions:', error)
+    return { error: error.message, processedCount: 0, releasedIds: [] }
+  }
+
+  if (!expiredTxs || expiredTxs.length === 0) {
+    return { success: true, processedCount: 0, releasedIds: [] }
+  }
+
+  const releasedIds: string[] = []
+  for (const tx of expiredTxs) {
+    const res = await autoReleaseExpiredTransaction(tx.id)
+    if (res.success) {
+      releasedIds.push(tx.id)
+    }
+  }
+
+  revalidatePath('/admin/transactions')
+  revalidatePath('/dashboard/transactions')
+  return { success: true, processedCount: releasedIds.length, releasedIds }
+}
+
+/**
+ * Admin action to trigger auto-release sweep
+ */
+export async function adminTriggerAutoReleaseSweep() {
+  return await autoReleaseAllExpiredTransactions()
+}

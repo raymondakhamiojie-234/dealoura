@@ -8,6 +8,10 @@ import { AdminPayoutDialog } from './AdminPayoutDialog'
 export default async function AdminTransactionsPage() {
   const supabase = await createClient()
 
+  // Auto-release any expired transactions across the marketplace on load
+  const { autoReleaseAllExpiredTransactions } = await import('@/app/actions/transactions')
+  await autoReleaseAllExpiredTransactions()
+
   // Fetch all transactions including payment proof details
   const { data: transactions } = await supabase
     .from('transactions')
@@ -34,16 +38,34 @@ export default async function AdminTransactionsPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <div className="flex items-center space-x-2 mb-2">
-          <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#010b13] text-[#ebf1f5]">
-            Escrow Desk Operations
-          </span>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center space-x-2 mb-2">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#010b13] text-[#ebf1f5]">
+              Escrow Desk Operations
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-[#010b13] tracking-tight">Escrow Deals Management</h1>
+          <p className="text-xs sm:text-sm text-[#526371] mt-1">
+            Monitor the middle-man escrow workflow. Reconcile bank transfers and crypto deposits, confirm account credentials, manage platform hold windows, and release seller payouts.
+          </p>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-black text-[#010b13] tracking-tight">Escrow Deals Management</h1>
-        <p className="text-xs sm:text-sm text-[#526371] mt-1">
-          Monitor the middle-man escrow workflow. Reconcile bank transfers and crypto deposits, confirm account credentials, manage the 7-day evaluation window, and release seller payouts.
-        </p>
+
+        <form
+          action={async () => {
+            'use server'
+            const { adminTriggerAutoReleaseSweep } = await import('@/app/actions/transactions')
+            await adminTriggerAutoReleaseSweep()
+          }}
+        >
+          <button
+            type="submit"
+            className="py-2.5 px-4 rounded-xl border border-[#d2dde4] bg-[#ffffff] hover:bg-[#ebf1f5] text-[#010b13] text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-xs shrink-0"
+          >
+            <Clock className="w-3.5 h-3.5 text-[#526371]" />
+            <span>Run Auto-Release Sweep</span>
+          </button>
+        </form>
       </div>
 
       {/* Transactions List */}

@@ -13,7 +13,7 @@ import {
   Clock
 } from 'lucide-react'
 import { EvaluationCountdown } from './evaluation-countdown'
-import { buyerAcceptAndRelease, buyerOpenDispute } from '@/app/actions/transactions'
+import { buyerAcceptAndRelease, buyerOpenDispute, autoReleaseExpiredTransaction } from '@/app/actions/transactions'
 
 interface BuyerEvaluationActionsProps {
   transactionId: string
@@ -92,6 +92,16 @@ export function BuyerEvaluationActions({
     }
   }
 
+  const handleAutoExpire = async () => {
+    setIsExpired(true)
+    try {
+      await autoReleaseExpiredTransaction(transactionId)
+      window.location.reload()
+    } catch (e) {
+      console.error('Auto release error:', e)
+    }
+  }
+
   return (
     <div className="space-y-5">
       {/* 1. Live Platform-Specific Countdown Display */}
@@ -100,7 +110,7 @@ export function BuyerEvaluationActions({
         startedAt={startedAt}
         platform={platform}
         holdDurationMinutes={holdDurationMinutes}
-        onExpire={() => setIsExpired(true)}
+        onExpire={handleAutoExpire}
       />
 
       {/* 2. Error Banner */}

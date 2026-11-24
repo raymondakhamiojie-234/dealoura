@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Lock,
   UserCheck,
+  X,
 } from 'lucide-react'
 import { EvaluationCountdown } from '@/components/evaluation-countdown'
 import { EscrowCredentialVault } from '@/components/escrow-credential-vault'
@@ -46,6 +47,27 @@ export default async function TransactionTrackerPage(props: { params: Promise<{ 
   }
 
   const isBuyer = tx.buyer_id === user.id
+
+  // Auto-release if evaluation period has elapsed with no disputes
+  if (
+    tx.status === 'buyer_7_day_evaluation' &&
+    tx.evaluation_ends_at &&
+    new Date(tx.evaluation_ends_at).getTime() <= Date.now()
+  ) {
+    const { autoReleaseExpiredTransaction } = await import('@/app/actions/transactions')
+    await autoReleaseExpiredTransaction(tx.id)
+    tx.status = 'completed'
+    tx.payout_status = tx.payout_status === 'completed' ? 'completed' : 'pending'
+  }
+
+  // Fetch dispute record if applicable
+  const { data: disputeRecord } = await supabase
+    .from('disputes')
+    .select('*')
+    .eq('transaction_id', tx.id)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
 
   // Sort timeline chronologically
   const timeline =
@@ -267,19 +289,63 @@ export default async function TransactionTrackerPage(props: { params: Promise<{ 
 
               {/* ACTION STAGE: DISPUTED */}
               {tx.status === 'disputed' && (
-                <div className="bg-red-50 border border-red-200 rounded-2xl p-6 sm:p-7 text-red-950 space-y-3 shadow-xs">
+                <div className="bg-red-50 border border-red-200 rounded-2xl p-6 sm:p-7 text-red-950 space-y-4 shadow-xs">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0">
                       <AlertTriangle className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="text-base font-black text-red-900">Escrow Deal in Formal Dispute</h4>
-                      <p className="text-xs text-red-700">All funds and credentials are frozen pending arbitration</p>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-base font-black text-red-900">Escrow Deal in Formal Dispute</h4>
+                        <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-300">
+                          {disputeRecord?.status === 'under_review' ? 'Under Active Review' : 'Claim Logged'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-red-700">All funds and credentials remain locked pending arbitration verdict</p>
                     </div>
                   </div>
                   <p className="text-xs text-red-800 leading-relaxed">
                     A dispute ticket has been registered on this transaction. A Dealoura Senior Compliance Officer is reviewing the chat logs, credentials, and submitted evidence. Neither party can release funds or transfer ownership until an arbitration verdict is issued.
                   </p>
+                  {disputeRecord && (
+                    <div className="bg-white/80 p-4 rounded-xl border border-red-200 space-y-2 text-xs">
+                      <div className="font-bold text-red-950 uppercase tracking-wider text-[10px]">Buyer Claim:</div>
+                      <p className="text-red-900 leading-relaxed">{disputeRecord.reason}</p>
+                      {disputeRecord.evidence_url && (
+                        <div className="pt-2">
+                          <a
+                            href={disputeRecord.evidence_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-xs font-bold text-red-700 underline hover:text-red-950"
+                          >
+                            <span>View Submitted Evidence Proof &rarr;</span>
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ACTION STAGE: CANCELLED */}
+              {tx.status === 'cancelled' && (
+                <div className="bg-[#ffffff] border border-red-200 rounded-2xl p-6 sm:p-8 text-center space-y-3 shadow-xs">
+                  <div className="w-12 h-12 bg-red-100 text-red-600 rounded-xl flex items-center justify-center mx-auto">
+                    <X className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-black text-[#010b13]">Escrow Transaction Cancelled</h3>
+                  <p className="text-xs text-[#526371] max-w-md mx-auto leading-relaxed">
+                    This deal has been cancelled by Dealoura Escrow Arbitration. Any vaulted buyer deposit has been credited back to the buyer, and account custody is revoked.
+                  </p>
+                  {disputeRecord?.resolution_notes && (
+                    <div className="mt-3 p-4 bg-red-50 rounded-xl border border-red-200 text-left text-xs max-w-lg mx-auto">
+                      <span className="font-bold text-red-950 block text-[10px] uppercase tracking-wider mb-1">
+                        Arbitration Ruling &amp; Findings:
+                      </span>
+                      <p className="text-red-900 leading-relaxed">{disputeRecord.resolution_notes}</p>
+                    </div>
+                  )}
                 </div>
               )}
 
