@@ -18,18 +18,13 @@ export default async function ReferralPage() {
   const supabase = await createClient()
   let user = null
   let profile = null
-  let wallet = null
 
   try {
     const { data } = await supabase.auth.getUser()
     user = data?.user || null
     if (user) {
-      const [pRes, wRes] = await Promise.all([
-        supabase.from('user_profiles').select('username').eq('id', user.id).single(),
-        supabase.from('user_wallets').select('available_balance').eq('user_id', user.id).maybeSingle()
-      ])
+      const pRes = await supabase.from('user_profiles').select('username').eq('id', user.id).single()
       profile = pRes.data
-      wallet = wRes.data
     }
   } catch {
     user = null
@@ -68,7 +63,6 @@ export default async function ReferralPage() {
           <ReferralDashboardClient
             username={username}
             referralLink={referralLink}
-            walletBalance={Number(wallet?.available_balance || 0)}
           />
         ) : (
           /* Public Join Card for Logged-Out Users */
@@ -82,7 +76,7 @@ export default async function ReferralPage() {
                 Get Your Unique Referral Link Today
               </h2>
               <p className="text-xs sm:text-sm text-[#ebf1f5]/70 max-w-lg mx-auto mt-2 leading-relaxed">
-                Sign in or register an account to unlock your personalized affiliate link and begin earning automated commissions paid directly to your Dealoura Wallet.
+                Sign in or register an account to unlock your personalized affiliate link and begin earning automated commissions on completed escrow trades.
               </p>
             </div>
 
@@ -140,9 +134,9 @@ export default async function ReferralPage() {
               <span className="w-8 h-8 rounded-xl bg-[#010b13] text-[#ebf1f5] font-black text-sm flex items-center justify-center">
                 3
               </span>
-              <h4 className="text-sm font-bold text-[#010b13]">Get Instant Wallet Payouts</h4>
+              <h4 className="text-sm font-bold text-[#010b13]">Get Direct Payouts</h4>
               <p className="text-xs text-[#526371] leading-relaxed">
-                20% of the escrow fee is automatically credited to your Dealoura balance. Withdraw to your bank or crypto anytime!
+                20% of the escrow fee is credited to your affiliate payout queue and disbursed directly to your bank or crypto address.
               </p>
             </div>
           </div>
@@ -197,7 +191,7 @@ export default async function ReferralPage() {
           <div className="bg-white p-5 rounded-2xl border border-[#d2dde4] text-xs space-y-1.5 shadow-xs">
             <h4 className="font-bold text-[#010b13]">How do I receive my commissions?</h4>
             <p className="text-[#526371] leading-relaxed">
-              Commissions land directly in your Dealoura Internal Wallet available balance. You can withdraw your earnings anytime via Bank Wire, ACH, USDT, or USDC.
+              Commissions are disbursed directly by the Dealoura Escrow Desk via Bank Wire, ACH, USDT, or USDC once your referral&apos;s trade completes.
             </p>
           </div>
 

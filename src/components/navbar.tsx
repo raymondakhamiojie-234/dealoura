@@ -11,7 +11,6 @@ import {
   Inbox, 
   LogOut, 
   User, 
-  Wallet, 
   ArrowRight, 
   PlusCircle, 
   ShoppingBag,
@@ -154,18 +153,6 @@ export default function Navbar() {
 
           {user ? (
             <div className="flex items-center space-x-2">
-              <Link 
-                href="/dashboard/wallet" 
-                className={`p-2 rounded-lg transition text-xs font-semibold flex items-center gap-1.5 ${
-                  isActive('/dashboard/wallet') 
-                    ? 'bg-[#d2dde4] text-[#010b13]' 
-                    : 'text-[#526371] hover:bg-[#d2dde4]/50 hover:text-[#010b13]'
-                }`}
-                title="Wallet Balance"
-              >
-                <Wallet className="w-4 h-4 text-[#010b13]" />
-                <span>Wallet</span>
-              </Link>
               <Link 
                 href="/dashboard/transactions" 
                 className={`p-2 rounded-lg transition text-xs font-semibold flex items-center gap-1.5 ${
